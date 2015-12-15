@@ -64,7 +64,7 @@ trait TopLevelRoute extends JsonApi {
     }
 
 
-  def route(implicit ec: ExecutionContext) =
+  def topLevelRoute(implicit ec: ExecutionContext) =
     headerValueByName("Authorization") { access_token =>
       (pathPrefix(routingConfig.namespace) & extract(_.request.uri)) { uri =>
 
@@ -82,7 +82,7 @@ trait TopLevelRoute extends JsonApi {
             } ~
             pathPrefix(Segment) { version =>
               routingConfig.versions.get(version) match {
-                case None => reject
+                case None => reject(UnsupportedVersionRejection(version))
                 case Some(validVersion) => versionRoute(version, validVersion, uri, apiUser)
               }
             }
