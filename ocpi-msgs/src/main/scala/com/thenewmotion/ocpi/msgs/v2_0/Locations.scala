@@ -29,6 +29,24 @@ object Locations {
     require(country.length == 3, "Location needs 3-letter, ISO 3166-1 country code!")
   }
 
+  case class LocationPatch(
+    id: String,
+    `type`: Option[LocationType] = None,
+    name: Option[String] = None,
+    address: Option[String] = None,
+    city: Option[String] = None,
+    postal_code: Option[String] = None,
+    country: Option[String] = None,
+    coordinates: Option[GeoLocation] = None,
+    evses: Option[List[Evse]] = None,
+    directions: Option[String] = None,
+    operator: Option[BusinessDetails] = None,
+    opening_times: Option[Hours] = None,
+    charging_when_closed: Option[Boolean] = None,
+    images: Option[List[Image]] = None) {
+    require(country.foldLeft(true) { (_, country) => country.length == 3}, "Location needs 3-letter, ISO 3166-1 country code!")
+  }
+
   sealed trait LocationType extends Nameable
   object LocationType extends Enumerable[LocationType] {
     case object OnStreet extends LocationType {val name = "ON_STREET"}
@@ -160,6 +178,20 @@ object Locations {
     ){
     require(connectors.nonEmpty, "Cardinality of connectors given as '+'")
   }
+
+  case class EvsePatch(
+    id: String,
+    location_id: Option[String] = None,
+    status: Option[ConnectorStatus] = None,
+    capabilities: Option[List[String]] = None,
+    connectors: Option[List[Connector]] = None,
+    floor_level:	Option[String] = None,
+    coordinates:	Option[GeoLocation] = None,
+    physical_number:	Option[String] = None,
+    directions: Option[String] = None,
+    parking_restrictions:	Option[ParkingRestriction] = None,
+    images: Option[Image] = None
+  )
 
   val LatRegex = """-?[0-9]{1,2}\.[0-9]{6}"""
   val LonRegex = """-?[0-9]{1,3}\.[0-9]{6}"""
