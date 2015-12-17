@@ -1,12 +1,15 @@
 package com.thenewmotion.ocpi.locations
 
+import com.thenewmotion.ocpi.msgs.v2_0.Locations.LocationPatch
 import org.joda.time.DateTime
+import org.mockito.Matchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import spray.http.MediaTypes._
 import spray.http.{ContentType, HttpCharsets, HttpEntity}
 import spray.testkit.Specs2RouteTest
+import scalaz._
 
 class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mockito {
 
@@ -22,7 +25,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route ~> check {
-        handled must beTrue
+        there was one(mspLocService).updateLocation(Matchers.eq("NL"), Matchers.eq("TNM"), any)
       }
     }
 
@@ -37,7 +40,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.route ~> check {
-        handled must beTrue
+        there was one(mspLocService).updateEvse(Matchers.eq("NL"), Matchers.eq("TNM"), any)
       }
     }
 
@@ -59,8 +62,11 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
         case ("NL", "TNM") => true
         case _ => false
       }
+    val mspLocService = mock[MspLocationsService]
+    mspLocService.updateLocation(Matchers.eq("NL"), Matchers.eq("TNM"), any) returns \/-(Unit)
+    mspLocService.updateEvse(Matchers.eq("NL"), Matchers.eq("TNM"), any) returns \/-(Unit)
 
-    val locationsRoute = new MspLocationsRoute(new MspLocationsService, authorizeAccess, dateTime1)
+    val locationsRoute = new MspLocationsRoute(mspLocService, authorizeAccess, dateTime1)
 
   }
 }
