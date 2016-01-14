@@ -12,11 +12,15 @@ class MspLocationsRoute(service: MspLocationsService, authorizeAccess: (String, 
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.GenericSuccess
 
   def route = {
+    put {
+      complete("not yet implemented")
+    } ~
     patch {
       pathPrefix ( Segment / Segment / Segment ) { (cc, opId, locId) =>
         authorize(authorizeAccess(cc, opId)) {
           pathEnd {
             entity(as[LocationPatch]) { location =>
+              location
               service.updateLocation(cc, opId, location) match {
                 case -\/(_) => reject()
                 case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
@@ -38,6 +42,9 @@ class MspLocationsRoute(service: MspLocationsService, authorizeAccess: (String, 
           }
         }
       }
+    } ~
+    get {
+      complete("not yet implemented")
     }
   }
 }
