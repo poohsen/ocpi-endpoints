@@ -1,7 +1,7 @@
 package com.thenewmotion.ocpi.msgs.v2_0
 
 import com.thenewmotion.ocpi.msgs.v2_0.Credentials.Creds
-import CommonTypes.BusinessDetails
+import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.{ImageCategory, Image, BusinessDetails}
 import Credentials._
 import OcpiJsonProtocol._
 import org.specs2.mutable.SpecificationWithJUnit
@@ -28,7 +28,7 @@ class CredentialsSpecs extends SpecificationWithJUnit {
       url = "https://example.com/ocpi/cpo/",
       business_details = BusinessDetails(
         "Example Operator",
-        Some("http://example.com/images/logo.png"),
+        Some(Image("https://example.com/img/logo.jpg", ImageCategory.Operator, "jpeg")),
         Some("http://example.com")
       )
     )
@@ -41,7 +41,11 @@ class CredentialsSpecs extends SpecificationWithJUnit {
          |    "url": "https://example.com/ocpi/cpo/",
          |    "business_details": {
          |        "name": "Example Operator",
-         |        "logo": "http://example.com/images/logo.png",
+         |        "logo": {
+         |            "url": "https://example.com/img/logo.jpg",
+         |            "category": "OPERATOR",
+         |            "type": "jpeg"
+         |        },
          |        "website": "http://example.com"
          |    }
          |}

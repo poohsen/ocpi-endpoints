@@ -1,6 +1,6 @@
 package com.thenewmotion.ocpi.handshake
 
-import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.{BusinessDetails => OcpiBusinessDetails}
+import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.{BusinessDetails => OcpiBusinessDetails, ImageCategory, Image}
 import com.thenewmotion.ocpi.msgs.v2_0.Credentials.Creds
 import org.joda.time.DateTime
 import org.specs2.mock.Mockito
@@ -24,7 +24,11 @@ class HandshakeRouteSpec extends Specification with Specs2RouteTest with Mockito
            |    "url": "https://example.com/ocpi/cpo/",
            |    "business_details": {
            |        "name": "Example Operator",
-           |        "logo": "http://example.com/images/logo.png",
+           |        "logo": {
+           |            "url": "https://example.com/img/logo.jpg",
+           |            "category": "OPERATOR",
+           |            "type": "jpeg"
+           |        },
            |        "website": "http://example.com"
            |    }
            |}
@@ -55,7 +59,7 @@ class HandshakeRouteSpec extends Specification with Specs2RouteTest with Mockito
       url = "https://example.com/ocpi/cpo/",
       business_details = OcpiBusinessDetails(
         "Example Operator",
-        Some("http://example.com/images/logo.png"),
+        Some(Image("https://example.com/img/logo.jpg", ImageCategory.Operator, "jpeg")),
         Some("http://example.com")
       )
     )
