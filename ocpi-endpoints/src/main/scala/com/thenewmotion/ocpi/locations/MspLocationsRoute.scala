@@ -20,7 +20,6 @@ class MspLocationsRoute(service: MspLocationsService, authorizeAccess: (String, 
         authorize(authorizeAccess(cc, opId)) {
           pathEnd {
             entity(as[LocationPatch]) { location =>
-              location
               service.updateLocation(cc, opId, location) match {
                 case -\/(_) => reject()
                 case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))

@@ -33,7 +33,7 @@ class TopLevelRouteSpec extends Specification with Specs2RouteTest with Mockito{
 
     "reject api calls without Authorization header" in new TopLevelScope {
       Get("/cpo/versions") ~>
-        addHeader(invalidToken) ~> topLevelRoute.topLevelRoute ~> check {
+        addHeader(invalidHeaderName) ~> topLevelRoute.topLevelRoute ~> check {
         handled must beFalse
         rejections must contain(MissingHeaderRejection("Authorization"))
       }

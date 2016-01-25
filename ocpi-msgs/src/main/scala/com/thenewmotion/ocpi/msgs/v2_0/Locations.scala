@@ -38,9 +38,11 @@ object Locations {
     postal_code: Option[String] = None,
     country: Option[String] = None,
     coordinates: Option[GeoLocation] = None,
+    related_locations: Option[List[AdditionalGeoLocation]] = None,
     evses: Option[List[Evse]] = None,
     directions: Option[String] = None,
     operator: Option[BusinessDetails] = None,
+    suboperator: Option[BusinessDetails] = None,
     opening_times: Option[Hours] = None,
     charging_when_closed: Option[Boolean] = None,
     images: Option[List[Image]] = None) {
@@ -112,13 +114,6 @@ object Locations {
     val values = List(Charging, Parking)
   }
 
-  // not in OCPP 2.0
-//
-//  case class Validity(
-//    period_type: Option[PeriodType],
-//    time: Option[String]
-//    )
-
   case class Tariff(
     tariff_id: String,
     price_taxed: Option[Double],
@@ -126,7 +121,6 @@ object Locations {
     pricing_unit: PricingUnit,
     tax_pct: Option[Double],
     currency: CurrencyUnit,
-    //    validity_rule: Option[Validity],  // not in OCPP 2.0
     condition: Option[String],
     display_text: List[DisplayText]
     )
@@ -179,18 +173,18 @@ object Locations {
     require(connectors.nonEmpty, "Cardinality of connectors given as '+'")
   }
 
-  case class EvsePatch(
-    id: String,
-    location_id: Option[String] = None,
+  case class EvsePatch(id: String,
     status: Option[ConnectorStatus] = None,
-    capabilities: Option[List[String]] = None,
     connectors: Option[List[Connector]] = None,
-    floor_level:	Option[String] = None,
-    coordinates:	Option[GeoLocation] = None,
-    physical_number:	Option[String] = None,
-    directions: Option[String] = None,
-    parking_restrictions:	Option[ParkingRestriction] = None,
-    images: Option[Image] = None
+    status_schedule: Option[List[StatusSchedule]] = None,
+    capabilities: Option[List[Capability]] = None,
+    evse_id: Option[String] = None,
+    floor_level: Option[String] = None,
+    coordinates: Option[GeoLocation] = None,
+    physical_reference: Option[String] = None,
+    directions: Option[List[DisplayText]] = None,
+    parking_restrictions: Option[List[ParkingRestriction]] = None,
+    images: Option[List[Image]] = None
   )
 
   val LatRegex = """-?[0-9]{1,2}\.[0-9]{6}"""
