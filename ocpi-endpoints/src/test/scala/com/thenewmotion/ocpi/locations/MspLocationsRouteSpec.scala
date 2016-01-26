@@ -1,5 +1,6 @@
 package com.thenewmotion.ocpi.locations
 
+import com.thenewmotion.ocpi.ApiUser
 import com.thenewmotion.ocpi.msgs.v2_0.Locations.LocationPatch
 import org.joda.time.DateTime
 import org.mockito.Matchers
@@ -24,7 +25,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |}
            |""".stripMargin)
 
-      Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route ~> check {
+      Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
         there was one(mspLocService).updateLocation(Matchers.eq("NL"), Matchers.eq("TNM"), any)
       }
     }
@@ -39,7 +40,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |}
            |""".stripMargin)
 
-      Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.route ~> check {
+      Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.route(apiUser) ~> check {
         there was one(mspLocService).updateEvse(Matchers.eq("NL"), Matchers.eq("TNM"), any)
       }
     }
@@ -47,7 +48,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
     "disallow unauthorized access" in new LocationsTestScope {
       val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`), string = "{}")
 
-      Patch("/BE/TNM/LOC1", body) ~> locationsRoute.route ~> check {
+      Patch("/BE/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
         handled must beFalse
       }
     }
@@ -57,14 +58,16 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
 
     val dateTime1 = DateTime.parse("2010-01-01T00:00:00Z")
 
-    def authorizeAccess(cc: String, opId: String) =
-      (cc, opId) match {
-        case ("NL", "TNM") => true
+    def authorizeAccess(cc: String, opId: String, locId: String) =
+      (cc, opId, locId) match {
+        case ("NL", "TNM", "LOC1") => true
         case _ => false
       }
     val mspLocService = mock[MspLocationsService]
     mspLocService.updateLocation(Matchers.eq("NL"), Matchers.eq("TNM"), any) returns \/-(Unit)
     mspLocService.updateEvse(Matchers.eq("NL"), Matchers.eq("TNM"), any) returns \/-(Unit)
+
+    val apiUser = ApiUser("1", "123", "NL", "TNM")
 
     val locationsRoute = new MspLocationsRoute(mspLocService, authorizeAccess, dateTime1)
 

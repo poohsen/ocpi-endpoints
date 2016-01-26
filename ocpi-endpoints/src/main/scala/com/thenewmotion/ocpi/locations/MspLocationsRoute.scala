@@ -1,26 +1,31 @@
 package com.thenewmotion.ocpi.locations
 
-import com.thenewmotion.ocpi.JsonApi
+import com.thenewmotion.ocpi.{ApiUser, JsonApi}
 import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.SuccessResp
 import com.thenewmotion.ocpi.msgs.v2_0.Locations.{EvsePatch, LocationPatch, Connector}
 import org.joda.time.DateTime
 import scalaz._
 
-class MspLocationsRoute(service: MspLocationsService, authorizeAccess: (String, String) => Boolean, currentTime: => DateTime = DateTime.now) extends JsonApi {
+class MspLocationsRoute(
+  service: MspLocationsService,
+  authorizeResourceAccess: (String, String, String) => Boolean,
+  currentTime: => DateTime = DateTime.now
+) extends JsonApi {
 
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiJsonProtocol._
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.GenericSuccess
 
-  def route = {
+  def route(apiUser: ApiUser) = {
     put {
       complete("not yet implemented")
     } ~
     patch {
-      pathPrefix ( Segment / Segment / Segment ) { (cc, opId, locId) =>
-        authorize(authorizeAccess(cc, opId)) {
+      pathPrefix ( Segment / Segment / Segment ) { (cc, pId, locId) =>
+        authorize( apiUser.country_code == cc && apiUser.party_id == pId &&
+                  authorizeResourceAccess(cc, pId, locId)) {
           pathEnd {
             entity(as[LocationPatch]) { location =>
-              service.updateLocation(cc, opId, location) match {
+              service.updateLocation(cc, pId, location) match {
                 case -\/(_) => reject()
                 case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
               }
@@ -28,7 +33,7 @@ class MspLocationsRoute(service: MspLocationsService, authorizeAccess: (String, 
           } ~ pathPrefix ( Segment ) { evseId =>
             pathEnd {
               entity(as[EvsePatch]) { evse =>
-                service.updateEvse(cc, opId, evse) match {
+                service.updateEvse(cc, pId, evse) match {
                   case -\/(_) => reject()
                   case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
                 }

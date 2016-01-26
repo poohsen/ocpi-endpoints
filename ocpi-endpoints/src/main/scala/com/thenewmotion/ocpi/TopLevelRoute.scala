@@ -59,7 +59,7 @@ trait TopLevelRoute extends JsonApi {
     pathPrefix(EndPointPathMatcher) { path =>
       versionInfo.endPoints.get(path) match {
         case None => reject
-        case Some(route) => route(version, apiUser.token)
+        case Some(route) => route(version, apiUser)
       }
     }
 
