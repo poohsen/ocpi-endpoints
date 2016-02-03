@@ -143,6 +143,18 @@ object Locations {
     amperage: Int,
     tariff_id: Option[String],
     terms_and_conditions: Option[Url] = None
+  )
+
+  case class ConnectorPatch(
+    id: String,
+    status: Option[ConnectorStatus],
+    standard: Option[ConnectorType],
+    format: Option[ConnectorFormat],
+    power_type:	Option[PowerType],
+    voltage: Option[Int],
+    amperage: Option[Int],
+    tariff_id: Option[String],
+    terms_and_conditions: Option[Url] = None
     )
 
 
@@ -170,10 +182,11 @@ object Locations {
     parking_restrictions:	List[ParkingRestriction] = List(),
     images: List[Image] = List()
     ){
-    require(connectors.nonEmpty, "Cardinality of connectors given as '+'")
+    require(connectors.nonEmpty, "List of connector can't be empty!")
   }
 
-  case class EvsePatch(id: String,
+  case class EvsePatch(
+    id: String,
     status: Option[ConnectorStatus] = None,
     connectors: Option[List[Connector]] = None,
     status_schedule: Option[List[StatusSchedule]] = None,
@@ -291,11 +304,31 @@ object Locations {
     val values = List(AC1Phase, AC3Phase, DC)
   }
 
-  case class LocationResp(
+  case class LocationsResp(
     status_code: Int,
     status_message: Option[String] = None,
     timestamp: DateTime = DateTime.now(),
     data: List[Location]
     ) extends OcpiResponse
 
+  case class LocationResp(
+    status_code: Int,
+    status_message: Option[String] = None,
+    timestamp: DateTime,
+    data: Location
+  ) extends OcpiResponse
+
+  case class EvseResp(
+    status_code: Int,
+    status_message: Option[String] = None,
+    timestamp: DateTime,
+    data: Evse
+  ) extends OcpiResponse
+
+  case class ConnectorResp(
+    status_code: Int,
+    status_message: Option[String] = None,
+    timestamp: DateTime,
+    data: Connector
+  ) extends OcpiResponse
 }
