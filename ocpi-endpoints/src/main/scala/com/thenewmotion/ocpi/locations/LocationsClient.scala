@@ -2,7 +2,7 @@ package com.thenewmotion.ocpi.locations
 
 import akka.actor.ActorRefFactory
 import com.thenewmotion.ocpi.common.OcpiClient
-import com.thenewmotion.ocpi.locations.Errors._
+import com.thenewmotion.ocpi.locations.LocationsError._
 import com.thenewmotion.ocpi.msgs.v2_0.Locations.LocationsResp
 import spray.client.pipelining._
 import spray.httpx.SprayJsonSupport._

@@ -4,7 +4,10 @@ import com.thenewmotion.ocpi.{ApiUser, JsonApi}
 import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.SuccessResp
 import com.thenewmotion.ocpi.msgs.v2_0.Locations._
 import org.joda.time.DateTime
+import spray.routing.{Route, Rejection}
 import scalaz._
+
+case class LocationsErrorRejection(error: LocationsError) extends Rejection
 
 class MspLocationsRoute(
   service: MspLocationsService,
@@ -12,8 +15,16 @@ class MspLocationsRoute(
   currentTime: => DateTime = DateTime.now
 ) extends JsonApi {
 
+
+
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiJsonProtocol._
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.GenericSuccess
+
+  private def leftToRejection[T](errOrX: LocationsError \/ T)(f: T => Route): Route =
+    errOrX match {
+      case -\/(err) => reject(LocationsErrorRejection(err))
+      case \/-(res) => f(res)
+    }
 
   def route(apiUser: ApiUser) = {
     pathPrefix(Segment / Segment / Segment) { (cc, pId, locId) =>
@@ -22,78 +33,61 @@ class MspLocationsRoute(
         pathEnd {
           patch {
             entity(as[LocationPatch]) { location =>
-              service.updateLocation(cc, pId, location) match {
-                case -\/(err) => reject(LocationUpdateRejection(err.reason))
-                case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
-              }
+              leftToRejection(service.updateLocation(cc, pId, location))
+              { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
             }
-          } ~
+          }
+        } ~
           put {
             entity(as[Location]) { location =>
-              service.createLocation(cc, pId, location) match {
-                case -\/(err) => reject(LocationCreationRejection(err.reason))
-                case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
-              }
+              leftToRejection(service.createLocation(cc, pId, location))
+              { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
             }
           } ~
           get {
-            service.location(cc, pId, locId) match {
-              case -\/(errorMsg) => reject()
-              case \/-(location) => complete(LocationResp(GenericSuccess.code, None, DateTime.now(), location))
-            }
+            leftToRejection(service.location(cc, pId, locId))
+            { location => complete(LocationResp(GenericSuccess.code, None, DateTime.now(), location))}
           }
-        }
-        pathPrefix(Segment) { evseId =>
-          pathEnd {
-            patch {
-              entity(as[EvsePatch]) { evse =>
-                service.updateEvse(cc, pId, evseId, evse) match {
-                  case -\/(_) => reject()
-                  case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
-                }
-              }
-            } ~
-              put {
-                entity(as[Evse]) { evse =>
-                  service.addEvse(cc, pId, locId, evseId, evse) match {
-                    case -\/(_) => reject()
-                    case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
-                  }
-                }
-              } ~
-              get {
-                service.evse(cc, pId, locId, evseId) match {
-                  case -\/(_) => reject()
-                  case \/-(evse) => complete(EvseResp(GenericSuccess.code, None, DateTime.now(), evse))
-                }
-              }
+      }
+      pathPrefix(Segment) { evseId =>
+        pathEnd {
+          patch {
+            entity(as[EvsePatch]) { evse =>
+              leftToRejection(service.updateEvse(cc, pId, evseId, evse))
+              { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
+            }
           } ~
-          path(Segment) { connId =>
-            patch {
-              entity(as[ConnectorPatch]) { conn =>
-                service.updateConnector(cc, pId, evseId, connId, conn) match {
-                  case -\/(_) => reject()
-                  case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
-                }
-              }
-            } ~
             put {
-              entity(as[Connector]) { conn =>
-                service.addConnector(cc, pId, locId, evseId, connId, conn) match {
-                  case -\/(_) => reject()
-                  case \/-(_) => complete(SuccessResp(GenericSuccess.code, DateTime.now()))
-                }
+              entity(as[Evse]) { evse =>
+                leftToRejection(service.addEvse(cc, pId, locId, evseId, evse))
+                { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
               }
             } ~
             get {
-              service.connector(cc, pId, locId, evseId, connId) match {
-                case -\/(_) => reject()
-                case \/-(connector) => complete(ConnectorResp(GenericSuccess.code, None, DateTime.now(), connector))
-              }
+              leftToRejection(service.evse(cc, pId, locId, evseId))
+              { evse => complete(EvseResp(GenericSuccess.code, None, DateTime.now(), evse)) }
             }
+        } ~
+          path(Segment) { connId =>
+            patch {
+              entity(as[ConnectorPatch]) { conn =>
+                leftToRejection(service.updateConnector(cc, pId, evseId, connId, conn))
+                { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
+              }
+            } ~
+              put {
+                entity(as[Connector]) { conn =>
+                  leftToRejection(service.addConnector(cc, pId, locId, evseId, connId, conn))
+                  { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
+                }
+              } ~
+              get {
+                leftToRejection(service.connector(cc, pId, locId, evseId, connId))
+                { connector => complete(ConnectorResp(GenericSuccess.code, None, DateTime.now(), connector)) }
+              }
           }
-        }
       }
     }
   }
 }
+

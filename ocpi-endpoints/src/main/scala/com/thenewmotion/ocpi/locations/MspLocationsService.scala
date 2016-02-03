@@ -1,6 +1,5 @@
 package com.thenewmotion.ocpi.locations
 
-import com.thenewmotion.ocpi.locations.Errors.LocationsError
 import com.thenewmotion.ocpi.msgs.v2_0.Locations._
 import scalaz._
 
@@ -18,10 +17,10 @@ trait MspLocationsService {
 
   def updateConnector(cc: String, opId: String, locId: String, evseId: String, connectorPatch: ConnectorPatch): LocationsError \/ Unit
 
-  def location(cc: String, opId: String, locId: String): String \/ Location
+  def location(cc: String, opId: String, locId: String): LocationsError \/ Location
 
-  def evse(cc: String, opId: String, locId: String, evseId: String): String \/ Evse
+  def evse(cc: String, opId: String, locId: String, evseId: String): LocationsError \/ Evse
 
-  def connector(cc: String, opId: String, locId: String, evseId: String, connectorId: String): String \/ Connector
+  def connector(cc: String, opId: String, locId: String, evseId: String, connectorId: String): LocationsError \/ Connector
 
 }

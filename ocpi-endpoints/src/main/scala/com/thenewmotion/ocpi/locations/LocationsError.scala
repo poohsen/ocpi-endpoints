@@ -1,7 +1,8 @@
 package com.thenewmotion.ocpi.locations
 
-object Errors{
-  sealed trait LocationsError {def reason: String}
+sealed trait LocationsError {def reason: String}
+
+object LocationsError{
 
   case class LocationsRetrievalFailed(reason: String = "") extends LocationsError
 
