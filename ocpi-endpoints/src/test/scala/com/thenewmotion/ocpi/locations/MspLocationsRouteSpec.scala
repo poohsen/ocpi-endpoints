@@ -1,9 +1,11 @@
 package com.thenewmotion.ocpi.locations
 
+
 import com.thenewmotion.ocpi.ApiUser
-import com.thenewmotion.ocpi.msgs.v2_0.Locations.LocationPatch
+import com.thenewmotion.ocpi.locations.LocationsError._
 import org.joda.time.DateTime
 import org.mockito.Matchers
+import Matchers.{eq => eq_}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -11,6 +13,7 @@ import spray.http.MediaTypes._
 import spray.http.{ContentType, HttpCharsets, HttpEntity}
 import spray.testkit.Specs2RouteTest
 import scalaz._
+
 
 class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mockito {
 
@@ -26,7 +29,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
-        there was one(mspLocService).updateLocation(Matchers.eq("NL"), Matchers.eq("TNM"), any)
+        there was one(mspLocService).updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any)
       }
     }
 
@@ -41,7 +44,22 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.route(apiUser) ~> check {
-        there was one(mspLocService).updateEvse(Matchers.eq("NL"), Matchers.eq("TNM"), any)
+        there was one(mspLocService).updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any)
+      }
+    }
+
+    "accept patches to a connector object" in new LocationsTestScope {
+
+      val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`), string =
+        s"""
+           |{
+           |    "id": "1",
+           |    "status": "CHARGING"
+           |}
+           |""".stripMargin)
+
+      Patch("/NL/TNM/LOC1/NL-TNM-02000000/1", body) ~> locationsRoute.route(apiUser) ~> check {
+        there was one(mspLocService).updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"), any)
       }
     }
 
@@ -64,8 +82,11 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
         case _ => false
       }
     val mspLocService = mock[MspLocationsService]
-    mspLocService.updateLocation(Matchers.eq("NL"), Matchers.eq("TNM"), any) returns \/-(Unit)
-    mspLocService.updateEvse(Matchers.eq("NL"), Matchers.eq("TNM"), any) returns \/-(Unit)
+    
+    mspLocService.updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns \/-(Unit)
+    mspLocService.location(eq_(CpoId("NL", "TNM")), eq_("LOC1")) returns -\/(LocationsRetrievalFailed())
+    mspLocService.updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns \/-(Unit)
+    mspLocService.updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns \/-(Unit)
 
     val apiUser = ApiUser("1", "123", "NL", "TNM")
 

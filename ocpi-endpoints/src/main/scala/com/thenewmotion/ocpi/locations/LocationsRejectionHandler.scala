@@ -25,7 +25,7 @@ object LocationsRejectionHandler extends BasicDirectives with SprayJsonSupport {
           HttpEntity(ContentTypes.`application/json`,
             ErrorResp(
               GenericClientFailure.code,
-              Some(reason),
+              reason,
               DateTime.now()).toJson.compactPrint)
         )
       }

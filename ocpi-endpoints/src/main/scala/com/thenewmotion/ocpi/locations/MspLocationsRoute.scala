@@ -33,56 +33,57 @@ class MspLocationsRoute(
         pathEnd {
           patch {
             entity(as[LocationPatch]) { location =>
-              leftToRejection(service.updateLocation(cc, pId, location))
+              leftToRejection(service.updateLocation(CpoId(cc, pId), locId, location))
               { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
             }
           }
         } ~
           put {
             entity(as[Location]) { location =>
-              leftToRejection(service.createLocation(cc, pId, location))
+              leftToRejection(service.createLocation(CpoId(cc, pId), locId, location))
               { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
             }
-          } ~
-          get {
-            leftToRejection(service.location(cc, pId, locId))
-            { location => complete(LocationResp(GenericSuccess.code, None, DateTime.now(), location))}
           }
+//        ~
+//          get {
+//            leftToRejection(service.location(CpoId(cc, pId), locId))
+//            { location => complete(LocationResp(GenericSuccess.code, None, DateTime.now(), location))}
+//          }
       }
       pathPrefix(Segment) { evseId =>
         pathEnd {
           patch {
             entity(as[EvsePatch]) { evse =>
-              leftToRejection(service.updateEvse(cc, pId, evseId, evse))
+              leftToRejection(service.updateEvse(CpoId(cc, pId), locId, evseId, evse))
               { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
             }
           } ~
             put {
               entity(as[Evse]) { evse =>
-                leftToRejection(service.addEvse(cc, pId, locId, evseId, evse))
+                leftToRejection(service.addEvse(CpoId(cc, pId), locId, evseId, evse))
                 { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
               }
             } ~
             get {
-              leftToRejection(service.evse(cc, pId, locId, evseId))
+              leftToRejection(service.evse(CpoId(cc, pId), locId, evseId))
               { evse => complete(EvseResp(GenericSuccess.code, None, DateTime.now(), evse)) }
             }
         } ~
           path(Segment) { connId =>
             patch {
               entity(as[ConnectorPatch]) { conn =>
-                leftToRejection(service.updateConnector(cc, pId, evseId, connId, conn))
+                leftToRejection(service.updateConnector(CpoId(cc, pId), locId, evseId, connId, conn))
                 { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
               }
             } ~
               put {
                 entity(as[Connector]) { conn =>
-                  leftToRejection(service.addConnector(cc, pId, locId, evseId, connId, conn))
+                  leftToRejection(service.addConnector(CpoId(cc, pId), locId, evseId, connId, conn))
                   { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
                 }
               } ~
               get {
-                leftToRejection(service.connector(cc, pId, locId, evseId, connId))
+                leftToRejection(service.connector(CpoId(cc, pId), locId, evseId, connId))
                 { connector => complete(ConnectorResp(GenericSuccess.code, None, DateTime.now(), connector)) }
               }
           }
