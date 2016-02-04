@@ -81,6 +81,8 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
         case ("NL", "TNM", "LOC1") => true
         case _ => false
       }
+
+
     val mspLocService = mock[MspLocationsService]
     
     mspLocService.updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns \/-(Unit)
