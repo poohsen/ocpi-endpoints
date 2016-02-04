@@ -41,12 +41,13 @@ class MspLocationsRoute(
                 leftToRejection(service.createLocation(CpoId(cc, pId), locId, location))
                 { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
               }
+            } ~
+            get {
+              dynamic {
+                leftToRejection(service.location(CpoId(cc, pId), locId))
+                { location => complete(LocationResp(GenericSuccess.code, None, DateTime.now(), location)) }
+              }
             }
-//          ~
-//            get {
-//              leftToRejection(service.location(CpoId(cc, pId), locId))
-//              { location => complete(LocationResp(GenericSuccess.code, None, DateTime.now(), location))}
-//            }
         } ~
           pathPrefix(Segment) { evseId =>
             pathEnd {
@@ -61,12 +62,13 @@ class MspLocationsRoute(
                     leftToRejection(service.addEvse(CpoId(cc, pId), locId, evseId, evse))
                       { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
                   }
+                } ~
+                get {
+                  dynamic {
+                    leftToRejection(service.evse(CpoId(cc, pId), locId, evseId))
+                    { evse => complete(EvseResp(GenericSuccess.code, None, DateTime.now(), evse)) }
+                  }
                 }
-//              ~
-//                get {
-//                  leftToRejection(service.evse(CpoId(cc, pId), locId, evseId))
-//                  { evse => complete(EvseResp(GenericSuccess.code, None, DateTime.now(), evse)) }
-//                }
             } ~
               path(Segment) { connId =>
                 patch {
@@ -80,12 +82,13 @@ class MspLocationsRoute(
                       leftToRejection(service.addConnector(CpoId(cc, pId), locId, evseId, connId, conn))
                         { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
                     }
+                  } ~
+                  get {
+                    dynamic {
+                      leftToRejection(service.connector(CpoId(cc, pId), locId, evseId, connId))
+                      { connector => complete(ConnectorResp(GenericSuccess.code, None, DateTime.now(), connector)) }
+                    }
                   }
-//                ~
-//                  get {
-//                    leftToRejection(service.connector(CpoId(cc, pId), locId, evseId, connId))
-//                    { connector => complete(ConnectorResp(GenericSuccess.code, None, DateTime.now(), connector)) }
-//                  }
               }
           }
       }
