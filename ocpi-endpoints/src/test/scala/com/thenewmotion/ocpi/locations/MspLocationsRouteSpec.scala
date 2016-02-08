@@ -19,12 +19,13 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
 
   "locations endpoint" should {
 
-    "accept a new location object" in new LocationsTestScope {
+    "accept a new location object without authorizing the location ID" in new LocationsTestScope {
 
-      val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`), string = loc1String)
+      val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`),
+        string = loc2String)
 
-      Put("/NL/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
-        there was one(mspLocService).createLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any)
+      Put("/NL/TNM/LOC2", body) ~> locationsRoute.route(apiUser) ~> check {
+        there was one(mspLocService).createLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any)
       }
     }
 
@@ -113,7 +114,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
 
     val mspLocService = mock[MspLocationsService]
 
-    mspLocService.createLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns \/-(Unit)
+    mspLocService.createLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any) returns \/-(Unit)
     mspLocService.updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns \/-(Unit)
     mspLocService.location(eq_(CpoId("NL", "TNM")), eq_("LOC1")) returns -\/(LocationsRetrievalFailed())
     mspLocService.evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns -\/(LocationsRetrievalFailed())
@@ -202,6 +203,8 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
                        |    }
                        |}
                        |""".stripMargin
+
+    val loc2String = loc1String.replace("LOC1","LOC2")
 
   }
 }
