@@ -10,7 +10,9 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import spray.http.MediaTypes._
-import spray.http.{ContentType, HttpCharsets, HttpEntity}
+import spray.http.{StatusCodes, ContentType, HttpCharsets, HttpEntity}
+import spray.json.DeserializationException
+import spray.routing.MalformedRequestContentRejection
 import spray.testkit.Specs2RouteTest
 import scalaz._
 
@@ -41,6 +43,22 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
 
       Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
         there was one(mspLocService).updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any)
+      }
+    }
+
+    "refuse patches to a location object with malformed JSON" in new LocationsTestScope {
+
+      val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`), string =
+        s"""
+           |{
+           |    "UID": "LOC1",
+           |    "address": "Otherstreet 12"
+           |}
+           |""".stripMargin)
+
+      Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
+        handled must beFalse
+        rejection must beLike { case MalformedRequestContentRejection(msg, _) if msg.contains("'id'")=> ok }
       }
     }
 
