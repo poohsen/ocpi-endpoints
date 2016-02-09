@@ -26,9 +26,10 @@ class MspLocationsRoute(
     }
 
   def route(apiUser: ApiUser) = {
+    handleRejections(LocationsRejectionHandler.Default) {
     pathPrefix(Segment / Segment / Segment) { (cc, pId, locId) =>
       authorize(apiUser.country_code == cc && apiUser.party_id == pId) {
-        pathEnd {
+        pathEndOrSingleSlash {
           put {
             entity(as[Location]) { location =>
               leftToRejection(service.createLocation(CpoId(cc, pId), locId, location)) { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
@@ -50,7 +51,7 @@ class MspLocationsRoute(
         } ~
           authorize(isResourceAccessAuthorized(cc, pId, locId)) {
             pathPrefix(Segment) { evseId =>
-              pathEnd {
+              pathEndOrSingleSlash {
                 put {
                   entity(as[Evse]) { evse =>
                     leftToRejection(service.addEvse(CpoId(cc, pId), locId, evseId, evse)) { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
@@ -67,7 +68,7 @@ class MspLocationsRoute(
                     }
                   }
               } ~
-                path(Segment) { connId =>
+                (path(Segment) & pathEndOrSingleSlash) { connId =>
                   put {
                     entity(as[Connector]) { conn =>
                       leftToRejection(service.addConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { _ => complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
@@ -87,6 +88,7 @@ class MspLocationsRoute(
             }
           }
       }
+    }
     }
   }
 }

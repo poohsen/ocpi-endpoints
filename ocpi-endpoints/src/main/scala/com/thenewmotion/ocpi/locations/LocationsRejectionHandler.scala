@@ -1,8 +1,8 @@
 package com.thenewmotion.ocpi.locations
 
-import com.thenewmotion.ocpi.locations.LocationsError.LocationsRetrievalFailed
+import com.thenewmotion.ocpi.locations.LocationsError._
 import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.ErrorResp
-import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.{GenericClientFailure, MissingHeader}
+import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.{GenericClientFailure}
 import org.joda.time.DateTime
 import spray.http.{ContentTypes, HttpEntity, HttpResponse}
 import spray.http.StatusCodes._
@@ -18,7 +18,19 @@ object LocationsRejectionHandler extends BasicDirectives with SprayJsonSupport {
 
   val Default = RejectionHandler {
 
-    case (LocationsErrorRejection(e@LocationsRetrievalFailed(reason))) :: _ =>
+    case (LocationsErrorRejection(e@LocationCreationFailed(reason))) :: _ =>
+      complete {
+        HttpResponse(
+          BadRequest,
+          HttpEntity(ContentTypes.`application/json`,
+            ErrorResp(
+              GenericClientFailure.code,
+              reason,
+              DateTime.now()).toJson.compactPrint)
+        )
+      }
+
+    case (LocationsErrorRejection(e@LocationRetrievalFailed(reason))) :: _ =>
       complete {
         HttpResponse(
           NotFound,
@@ -30,5 +42,28 @@ object LocationsRejectionHandler extends BasicDirectives with SprayJsonSupport {
         )
       }
 
+    case (LocationsErrorRejection(e@EvseRetrievalFailed(reason))) :: _ =>
+      complete {
+        HttpResponse(
+          NotFound,
+          HttpEntity(ContentTypes.`application/json`,
+            ErrorResp(
+              GenericClientFailure.code,
+              reason,
+              DateTime.now()).toJson.compactPrint)
+        )
+      }
+
+    case (LocationsErrorRejection(e@ConnectorRetrievalFailed(reason))) :: _ =>
+      complete {
+        HttpResponse(
+          NotFound,
+          HttpEntity(ContentTypes.`application/json`,
+            ErrorResp(
+              GenericClientFailure.code,
+              reason,
+              DateTime.now()).toJson.compactPrint)
+        )
+      }
   }
 }

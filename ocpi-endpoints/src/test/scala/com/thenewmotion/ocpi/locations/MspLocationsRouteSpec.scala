@@ -116,9 +116,9 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
 
     mspLocService.createLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any) returns \/-(Unit)
     mspLocService.updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns \/-(Unit)
-    mspLocService.location(eq_(CpoId("NL", "TNM")), eq_("LOC1")) returns -\/(LocationsRetrievalFailed())
-    mspLocService.evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns -\/(LocationsRetrievalFailed())
-    mspLocService.connector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns -\/(LocationsRetrievalFailed())
+    mspLocService.location(eq_(CpoId("NL", "TNM")), eq_("LOC1")) returns -\/(LocationRetrievalFailed())
+    mspLocService.evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns -\/(LocationRetrievalFailed())
+    mspLocService.connector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns -\/(LocationRetrievalFailed())
     mspLocService.updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns \/-(Unit)
     mspLocService.updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns \/-(Unit)
 
