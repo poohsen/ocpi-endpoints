@@ -2,7 +2,6 @@ package com.thenewmotion.ocpi
 
 import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.ErrorResp
 import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes._
-import org.joda.time.DateTime
 import spray.http.StatusCodes._
 import spray.httpx.SprayJsonSupport
 import spray.json._

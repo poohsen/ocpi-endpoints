@@ -18,52 +18,36 @@ object LocationsRejectionHandler extends BasicDirectives with SprayJsonSupport {
 
   val Default = RejectionHandler {
 
-    case (LocationsErrorRejection(e@LocationCreationFailed(reason))) :: _ =>
-      complete {
-        HttpResponse(
-          BadRequest,
-          HttpEntity(ContentTypes.`application/json`,
+    case (LocationsErrorRejection(e@LocationCreationFailed(reason))) :: _ => complete {
+        ( BadRequest,
             ErrorResp(
               GenericClientFailure.code,
               reason,
               DateTime.now()).toJson.compactPrint)
-        )
       }
 
-    case (LocationsErrorRejection(e@LocationRetrievalFailed(reason))) :: _ =>
-      complete {
-        HttpResponse(
-          NotFound,
-          HttpEntity(ContentTypes.`application/json`,
+    case (LocationsErrorRejection(e@LocationRetrievalFailed(reason))) :: _ => complete {
+        ( NotFound,
             ErrorResp(
               GenericClientFailure.code,
               reason,
               DateTime.now()).toJson.compactPrint)
-        )
       }
 
-    case (LocationsErrorRejection(e@EvseRetrievalFailed(reason))) :: _ =>
-      complete {
-        HttpResponse(
-          NotFound,
-          HttpEntity(ContentTypes.`application/json`,
+    case (LocationsErrorRejection(e@EvseRetrievalFailed(reason))) :: _ => complete {
+        ( NotFound,
             ErrorResp(
               GenericClientFailure.code,
               reason,
               DateTime.now()).toJson.compactPrint)
-        )
       }
 
-    case (LocationsErrorRejection(e@ConnectorRetrievalFailed(reason))) :: _ =>
-      complete {
-        HttpResponse(
-          NotFound,
-          HttpEntity(ContentTypes.`application/json`,
+    case (LocationsErrorRejection(e@ConnectorRetrievalFailed(reason))) :: _ => complete {
+        ( NotFound,
             ErrorResp(
               GenericClientFailure.code,
               reason,
               DateTime.now()).toJson.compactPrint)
-        )
       }
   }
 }

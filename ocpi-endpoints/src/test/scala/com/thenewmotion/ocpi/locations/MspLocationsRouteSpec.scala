@@ -10,8 +10,7 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import spray.http.MediaTypes._
-import spray.http.{StatusCodes, ContentType, HttpCharsets, HttpEntity}
-import spray.json.DeserializationException
+import spray.http.{ContentType, HttpCharsets, HttpEntity}
 import spray.routing.MalformedRequestContentRejection
 import spray.testkit.Specs2RouteTest
 import scalaz._

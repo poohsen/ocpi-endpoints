@@ -1,5 +1,6 @@
 package com.thenewmotion.ocpi.locations
 
+import com.thenewmotion.ocpi.locations.LocationsError.LocationCreationFailed
 import com.thenewmotion.ocpi.{ApiUser, JsonApi}
 import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.SuccessResp
 import com.thenewmotion.ocpi.msgs.v2_0.Locations._
