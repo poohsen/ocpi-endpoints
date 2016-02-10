@@ -11,7 +11,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import spray.http.MediaTypes._
 import spray.http.{ContentType, HttpCharsets, HttpEntity}
-import spray.routing.MalformedRequestContentRejection
+import spray.routing.{AuthorizationFailedRejection, MalformedRequestContentRejection}
 import spray.testkit.Specs2RouteTest
 import scalaz._
 
@@ -25,7 +25,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
       val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`),
         string = loc2String)
 
-      Put("/NL/TNM/LOC2", body) ~> locationsRoute.route(apiUser) ~> check {
+      Put("/NL/TNM/LOC2", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         there was one(mspLocService).createLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any)
       }
     }
@@ -40,7 +40,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |}
            |""".stripMargin)
 
-      Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
+      Patch("/NL/TNM/LOC1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         there was one(mspLocService).updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any)
       }
     }
@@ -55,7 +55,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |}
            |""".stripMargin)
 
-      Patch("/NL/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
+      Patch("/NL/TNM/LOC1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         handled must beFalse
         rejection must beLike { case MalformedRequestContentRejection(msg, _) if msg.contains("'id'")=> ok }
       }
@@ -71,7 +71,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |}
            |""".stripMargin)
 
-      Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.route(apiUser) ~> check {
+      Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         there was one(mspLocService).updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any)
       }
     }
@@ -86,34 +86,44 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |}
            |""".stripMargin)
 
-      Patch("/NL/TNM/LOC1/NL-TNM-02000000/1", body) ~> locationsRoute.route(apiUser) ~> check {
+      Patch("/NL/TNM/LOC1/NL-TNM-02000000/1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         there was one(mspLocService).updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"), any)
       }
     }
 
     "retrieve a location object" in new LocationsTestScope {
-      Get("/NL/TNM/LOC1") ~> locationsRoute.route(apiUser) ~> check {
+      Get("/NL/TNM/LOC1") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         there was one(mspLocService).location(eq_(CpoId("NL", "TNM")), eq_("LOC1"))
       }
     }
 
     "retrieve a EVSE object" in new LocationsTestScope {
-      Get("/NL/TNM/LOC1/NL-TNM-02000000") ~> locationsRoute.route(apiUser) ~> check {
+      Get("/NL/TNM/LOC1/NL-TNM-02000000") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         there was one(mspLocService).evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"))
       }
     }
 
     "retrieve a connector object" in new LocationsTestScope {
-      Get("/NL/TNM/LOC1/NL-TNM-02000000/1") ~> locationsRoute.route(apiUser) ~> check {
+      Get("/NL/TNM/LOC1/NL-TNM-02000000/1") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         there was one(mspLocService).connector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"))
       }
     }
 
-    "disallow unauthorized access" in new LocationsTestScope {
+    "disallow access by authenticated but unauthorized parties" in new LocationsTestScope {
       val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`), string = "{}")
 
-      Patch("/BE/TNM/LOC1", body) ~> locationsRoute.route(apiUser) ~> check {
+      Patch("/BE/BEC/LOC1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
         handled must beFalse
+        rejection must beLike { case AuthorizationFailedRejection => ok }
+      }
+    }
+
+    "disallow unauthorized resource access" in new LocationsTestScope {
+      val body = HttpEntity(contentType = ContentType(`application/json`, HttpCharsets.`UTF-8`), string = "{}")
+
+      Patch("/NL/TNM/LOC2", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
+        handled must beFalse
+        rejection must beLike { case AuthorizationFailedRejection => ok }
       }
     }
   }
