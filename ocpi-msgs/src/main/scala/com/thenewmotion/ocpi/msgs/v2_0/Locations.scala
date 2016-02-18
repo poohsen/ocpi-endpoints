@@ -314,21 +314,21 @@ object Locations {
   case class LocationResp(
     status_code: Int,
     status_message: Option[String] = None,
-    timestamp: DateTime,
+    timestamp: DateTime = DateTime.now(),
     data: Location
   ) extends OcpiResponse
 
   case class EvseResp(
     status_code: Int,
     status_message: Option[String] = None,
-    timestamp: DateTime,
+    timestamp: DateTime = DateTime.now(),
     data: Evse
   ) extends OcpiResponse
 
   case class ConnectorResp(
     status_code: Int,
     status_message: Option[String] = None,
-    timestamp: DateTime,
+    timestamp: DateTime = DateTime.now(),
     data: Connector
   ) extends OcpiResponse
 }

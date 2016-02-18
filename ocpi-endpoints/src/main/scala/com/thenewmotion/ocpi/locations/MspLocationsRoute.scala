@@ -38,7 +38,7 @@ class MspLocationsRoute(
             authorize(apiUser.country_code == cc && apiUser.party_id == pId) {
               entity(as[Location]) { location =>
                 leftToRejection(service.createLocation(CpoId(cc, pId), locId, location)) { _ =>
-                  complete((StatusCodes.Created, SuccessResp(GenericSuccess.code, DateTime.now()))) }
+                  complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
               }
             }
           }
@@ -49,13 +49,13 @@ class MspLocationsRoute(
           patch {
             entity(as[LocationPatch]) { location =>
               leftToRejection(service.updateLocation(CpoId(cc, pId), locId, location)){ _ =>
-                complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
+                complete(SuccessResp(GenericSuccess.code)) }
             }
           } ~
           get {
             dynamic {
               leftToRejection(service.location(CpoId(cc, pId), locId)) { location =>
-                complete(LocationResp(GenericSuccess.code, None, DateTime.now(), location)) }
+                complete(LocationResp(GenericSuccess.code, None, data = location)) }
             }
           }
         } ~
@@ -64,19 +64,19 @@ class MspLocationsRoute(
               put {
                 entity(as[Evse]) { evse =>
                   leftToRejection(service.addEvse(CpoId(cc, pId), locId, evseId, evse)) { _ =>
-                    complete((StatusCodes.Created, SuccessResp(GenericSuccess.code, DateTime.now()))) }
+                    complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
                 }
               } ~
                 patch {
                   entity(as[EvsePatch]) { evse =>
                     leftToRejection(service.updateEvse(CpoId(cc, pId), locId, evseId, evse)) { _ =>
-                      complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
+                      complete(SuccessResp(GenericSuccess.code)) }
                   }
                 } ~
                 get {
                   dynamic {
                     leftToRejection(service.evse(CpoId(cc, pId), locId, evseId)) { evse =>
-                      complete(EvseResp(GenericSuccess.code, None, DateTime.now(), evse)) }
+                      complete(EvseResp(GenericSuccess.code, None, data = evse)) }
                   }
                 }
             } ~
@@ -84,19 +84,19 @@ class MspLocationsRoute(
                 put {
                   entity(as[Connector]) { conn =>
                     leftToRejection(service.addConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { _ =>
-                      complete((StatusCodes.Created, SuccessResp(GenericSuccess.code, DateTime.now()))) }
+                      complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
                   }
                 } ~
                   patch {
                     entity(as[ConnectorPatch]) { conn =>
                       leftToRejection(service.updateConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { _ =>
-                        complete(SuccessResp(GenericSuccess.code, DateTime.now())) }
+                        complete(SuccessResp(GenericSuccess.code)) }
                     }
                   } ~
                   get {
                     dynamic {
                       leftToRejection(service.connector(CpoId(cc, pId), locId, evseId, connId)) { connector =>
-                        complete(ConnectorResp(GenericSuccess.code, None, DateTime.now(), connector)) }
+                        complete(ConnectorResp(GenericSuccess.code, None, data = connector)) }
                     }
                   }
               }
