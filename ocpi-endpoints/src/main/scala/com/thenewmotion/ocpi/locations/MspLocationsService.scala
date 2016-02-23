@@ -5,13 +5,16 @@ import scalaz._
 
 case class CpoId(countryCode: String, partyId: String)
 
+/**
+  * All methods are to be implemented in an idempotent fashion.
+  */
 trait MspLocationsService {
 
-  def createLocation(cpo: CpoId, locId: String, loc: Location): LocationsError \/ Unit
+  def createOrUpdateLocation(cpo: CpoId, locId: String, loc: Location): LocationsError \/ Unit
 
-  def addEvse(cpo: CpoId, locId: String, evseId: String, evse: Evse): LocationsError \/ Unit
+  def addOrUpdateEvse(cpo: CpoId, locId: String, evseId: String, evse: Evse): LocationsError \/ Unit
 
-  def addConnector(cpo: CpoId, locId: String, evseId: String, connId: String, connector: Connector): LocationsError \/ Unit
+  def addOrUpdateConnector(cpo: CpoId, locId: String, evseId: String, connId: String, connector: Connector): LocationsError \/ Unit
 
   def updateLocation(cpo: CpoId, locId: String, locPatch: LocationPatch): LocationsError \/ Unit
 

@@ -35,16 +35,16 @@ class MspLocationsRoute(
       pathEndOrSingleSlash {
         cancelRejection(MethodRejection(HttpMethods.PUT)){
           put {
-            authorize(apiUser.country_code == cc && apiUser.party_id == pId) {
+            authorize(apiUser.countryCode == cc && apiUser.partyId == pId) {
               entity(as[Location]) { location =>
-                leftToRejection(service.createLocation(CpoId(cc, pId), locId, location)) { _ =>
+                leftToRejection(service.createOrUpdateLocation(CpoId(cc, pId), locId, location)) { _ =>
                   complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
               }
             }
           }
         }
       } ~
-      authorize(apiUser.country_code == cc && apiUser.party_id == pId && isResourceAccessAuthorized(cc, pId, locId)) {
+      authorize(apiUser.countryCode == cc && apiUser.partyId == pId && isResourceAccessAuthorized(cc, pId, locId)) {
         pathEndOrSingleSlash {
           patch {
             entity(as[LocationPatch]) { location =>
@@ -63,7 +63,7 @@ class MspLocationsRoute(
             pathEndOrSingleSlash {
               put {
                 entity(as[Evse]) { evse =>
-                  leftToRejection(service.addEvse(CpoId(cc, pId), locId, evseId, evse)) { _ =>
+                  leftToRejection(service.addOrUpdateEvse(CpoId(cc, pId), locId, evseId, evse)) { _ =>
                     complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
                 }
               } ~
@@ -83,7 +83,7 @@ class MspLocationsRoute(
               (path(Segment) & pathEndOrSingleSlash) { connId =>
                 put {
                   entity(as[Connector]) { conn =>
-                    leftToRejection(service.addConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { _ =>
+                    leftToRejection(service.addOrUpdateConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { _ =>
                       complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
                   }
                 } ~
