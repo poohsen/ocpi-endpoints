@@ -32,13 +32,6 @@ object OcpiRejectionHandler extends BasicDirectives with SprayJsonSupport {
           Some(s"${UnsupportedVersion.default_message}: $version")).toJson.compactPrint)
     }
 
-    case (r@NoVersionsRejection()) :: _ => complete {
-      ( InternalServerError,
-        ErrorResp(
-          NotVersionsRegistered.code,
-          Some(NotVersionsRegistered.default_message)).toJson.compactPrint)
-    }
-
     case (r@AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, challengeHeaders)) :: _ =>
       complete {
         ( BadRequest,

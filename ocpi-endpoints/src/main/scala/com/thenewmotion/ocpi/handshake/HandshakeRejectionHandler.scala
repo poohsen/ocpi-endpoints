@@ -19,53 +19,53 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
   val Default = RejectionHandler {
 
     // UnableToUseApi
-    case HandshakeErrorRejection(e@VersionsRetrievalFailed(reason)) :: _ => complete {
+    case HandshakeErrorRejection(VersionsRetrievalFailed) :: _ => complete {
       ( FailedDependency,
         ErrorResp(
           UnableToUseApi.code,
-          reason,
+          Some(VersionsRetrievalFailed.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@VersionDetailsRetrievalFailed(reason)) :: _ => complete {
+    case HandshakeErrorRejection(VersionDetailsRetrievalFailed) :: _ => complete {
       ( FailedDependency,
         ErrorResp(
           UnableToUseApi.code,
-          reason,
+          Some(VersionDetailsRetrievalFailed.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
     // Initiate handshake specific error
-    case HandshakeErrorRejection(e@SendingCredentialsFailed(reason)) :: _ => complete {
+    case HandshakeErrorRejection(SendingCredentialsFailed) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           UnableToUseApi.code,
-          reason,
+          Some(SendingCredentialsFailed.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
     // UnsupportedVersion
-    case HandshakeErrorRejection(e@SelectedVersionNotHostedByUs(reason)) :: _ => complete {
+    case HandshakeErrorRejection(SelectedVersionNotHostedByUs) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           UnsupportedVersion.code,
-          reason,
+          Some(SelectedVersionNotHostedByUs.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@CouldNotFindMutualVersion(reason)) :: _ => complete {
+    case HandshakeErrorRejection(CouldNotFindMutualVersion) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           UnsupportedVersion.code,
-          reason,
+          Some(CouldNotFindMutualVersion.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@SelectedVersionNotHostedByThem(reason)) :: _ => complete {
+    case HandshakeErrorRejection(SelectedVersionNotHostedByThem) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           UnsupportedVersion.code,
-          reason,
+          Some(SelectedVersionNotHostedByThem.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
@@ -80,93 +80,85 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
     }
 
     // Is recognized by OCPI msgs but not internally by the application that uses it
-    case HandshakeErrorRejection(e@HandshakeError.UnknownEndpointType(reason)) :: _ => complete {
+    case HandshakeErrorRejection(HandshakeError.UnknownEndpointType) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           OcpiStatusCodes.UnknownEndpointType.code,
-          reason,
+          Some(HandshakeError.UnknownEndpointType.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
     // GenericServerFailure
-    case HandshakeErrorRejection(e@CouldNotPersistCredsForUs(reason)) :: _ => complete {
+    case HandshakeErrorRejection(CouldNotPersistCredsForUs) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          reason,
+          Some(CouldNotPersistCredsForUs.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@CouldNotPersistCredsForUs(reason)) :: _ => complete {
+    case HandshakeErrorRejection(CouldNotPersistNewCredsForUs) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          reason,
+          Some(CouldNotPersistNewCredsForUs.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@CouldNotPersistNewCredsForUs(reason)) :: _ => complete {
+    case HandshakeErrorRejection(CouldNotPersistNewToken) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          reason,
+          Some(CouldNotPersistNewToken.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@CouldNotPersistNewToken(reason)) :: _ => complete {
+    case HandshakeErrorRejection(CouldNotPersistNewEndpoint) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          reason,
+          Some(CouldNotPersistNewEndpoint.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@CouldNotPersistNewEndpoint(reason)) :: _ => complete {
+    case HandshakeErrorRejection(CouldNotUpdateEndpoints) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          reason,
+          Some(CouldNotUpdateEndpoints.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@CouldNotUpdateEndpoints(reason)) :: _ => complete {
+    case HandshakeErrorRejection(CouldNotPersistNewParty) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          reason,
-          DateTime.now()).toJson.compactPrint)
-    }
-
-    case HandshakeErrorRejection(e@CouldNotPersistNewParty(reason)) :: _ => complete {
-      ( InternalServerError,
-        ErrorResp(
-          GenericServerFailure.code,
-          reason,
+          Some(CouldNotPersistNewParty.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
     // Not allowed
-    case HandshakeErrorRejection(e@AlreadyExistingParty(reason)) :: _ => complete {
+    case HandshakeErrorRejection(AlreadyExistingParty) :: _ => complete {
       ( Conflict,
         ErrorResp(
           PartyAlreadyRegistered.code,
-          reason,
+          Some(AlreadyExistingParty.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@UnknownPartyToken(reason)) :: _ => complete {
+    case HandshakeErrorRejection(UnknownPartyToken) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           AuthenticationFailed.code,
-          reason,
+          Some(UnknownPartyToken.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
-    case HandshakeErrorRejection(e@WaitingForRegistrationRequest(reason)) :: _ => complete {
+    case HandshakeErrorRejection(WaitingForRegistrationRequest) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           RegistrationNotCompletedYetByParty.code,
-          reason,
+          Some(WaitingForRegistrationRequest.reason),
           DateTime.now()).toJson.compactPrint)
     }
 
