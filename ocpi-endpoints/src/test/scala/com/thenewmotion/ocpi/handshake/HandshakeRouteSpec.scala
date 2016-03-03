@@ -192,7 +192,7 @@ class HandshakeRouteSpec extends Specification with Specs2RouteTest with Mockito
 
     handshakeService.initiateHandshakeProcess(credsToConnectToThem.token, credsToConnectToThem.url) returns
       Future.successful(\/-(credsToConnectToThem))
-    handshakeService.findRegisteredCredsToConnectToUs(any) returns -\/(UnknownPartyToken)
+    handshakeService.findRegisteredCredsToConnectToUs(any) returns -\/(UnknownPartyToken(tokenToConnectToUs))
 
     val credentialsRoute = new HandshakeRoute(handshakeService, dateTime)
     val initHandshakeRoute = new InitiateHandshakeRoute(handshakeService, dateTime)

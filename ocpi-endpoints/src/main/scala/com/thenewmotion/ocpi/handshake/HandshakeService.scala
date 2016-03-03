@@ -147,8 +147,8 @@ abstract class HandshakeService(
         case Some(ver) => Future.successful(\/-(ver))
         case None =>
           if (initiatedByUs) Future.successful(-\/(CouldNotFindMutualVersion))
-          else if (ourVersion != version) Future.successful(-\/(SelectedVersionNotHostedByUs))
-          else Future.successful(-\/(SelectedVersionNotHostedByThem))
+          else if (ourVersion != version) Future.successful(-\/(SelectedVersionNotHostedByUs(version)))
+          else Future.successful(-\/(SelectedVersionNotHostedByThem(version)))
       }
     }
 

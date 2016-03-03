@@ -47,7 +47,7 @@ class HandshakeServiceSpec extends Specification  with Mockito with FutureMatche
         List())))
       val result = handshakeService.reactToHandshakeRequest(selectedVersion, tokenToConnectToUs, credsToConnectToThem)
 
-      result must be_-\/(SelectedVersionNotHostedByThem: HandshakeError).await
+      result must be_-\/(SelectedVersionNotHostedByThem(selectedVersion): HandshakeError).await
     }
 
     "return error if there was an error getting version details" in new HandshakeTestScope {
@@ -107,7 +107,7 @@ class HandshakeServiceSpec extends Specification  with Mockito with FutureMatche
           newTokenToConnectToUs: String,
           credsToConnectToThem: Creds,
           endpoints: Iterable[Endpoint]
-        ): Disjunction[HandshakeError, Unit] = -\/(CouldNotPersistNewToken)
+        ): Disjunction[HandshakeError, Unit] = -\/(CouldNotPersistNewToken(newTokenToConnectToUs))
 
         protected def persistUpdateCredsResult(
           version: String,
@@ -119,17 +119,17 @@ class HandshakeServiceSpec extends Specification  with Mockito with FutureMatche
 
         protected def persistHandshakeInitResult(
           version: String,
-          newTokenToConnectToUs: String,
+          tokenToConnectToUs: String,
           newCredToConnectToThem: Creds,
           endpoints: Iterable[Endpoint]
-        ): Disjunction[HandshakeError, Unit] = -\/(CouldNotPersistNewToken)
+        ): Disjunction[HandshakeError, Unit] = -\/(CouldNotPersistNewToken(newCredToConnectToThem.token))
 
-        def findRegisteredCredsToConnectToUs(t: String) = -\/(UnknownPartyToken)
+        def findRegisteredCredsToConnectToUs(t: String) = -\/(UnknownPartyToken(tokenToConnectToUs))
       }
 
       val result = handshakeServiceError.initiateHandshakeProcess(tokenToConnectToUs, theirVersionsUrl)
 
-      result must be_-\/(CouldNotPersistNewToken: HandshakeError).await
+      result must be_-\/(CouldNotPersistNewToken(tokenToConnectToUs): HandshakeError).await
     }
 
     "return an error when it fails sending the credentials" in new HandshakeTestScope{
@@ -247,7 +247,7 @@ class HandshakeServiceSpec extends Specification  with Mockito with FutureMatche
         endpoints: Iterable[Endpoint]
       ): Disjunction[HandshakeError, Unit] = \/-(())
 
-      def findRegisteredCredsToConnectToUs(t: String) = -\/(UnknownPartyToken)
+      def findRegisteredCredsToConnectToUs(t: String) = -\/(UnknownPartyToken(tokenToConnectToUs))
     }
   }
 }

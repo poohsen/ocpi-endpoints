@@ -40,11 +40,11 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
     }
 
     // UnsupportedVersion
-    case HandshakeErrorRejection(SelectedVersionNotHostedByUs) :: _ => complete {
+    case HandshakeErrorRejection(e@SelectedVersionNotHostedByUs(v)) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           UnsupportedVersion.code,
-          SelectedVersionNotHostedByUs.reason))
+          e.reason))
     }
 
     case HandshakeErrorRejection(CouldNotFindMutualVersion) :: _ => complete {
@@ -54,11 +54,11 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
           CouldNotFindMutualVersion.reason))
     }
 
-    case HandshakeErrorRejection(SelectedVersionNotHostedByThem) :: _ => complete {
+    case HandshakeErrorRejection(e@SelectedVersionNotHostedByThem(v)) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           UnsupportedVersion.code,
-          SelectedVersionNotHostedByThem.reason))
+          e.reason))
     }
 
     // Endpoints
@@ -71,11 +71,11 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
     }
 
     // Is recognized by OCPI msgs but not internally by the application that uses it
-    case HandshakeErrorRejection(HandshakeError.UnknownEndpointType) :: _ => complete {
+    case HandshakeErrorRejection(e@HandshakeError.UnknownEndpointType(ep)) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           OcpiStatusCodes.UnknownEndpointType.code,
-          HandshakeError.UnknownEndpointType.reason))
+          e.reason))
     }
 
     // GenericServerFailure
@@ -94,19 +94,19 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
           
     }
 
-    case HandshakeErrorRejection(CouldNotPersistNewToken) :: _ => complete {
+    case HandshakeErrorRejection(e@CouldNotPersistNewToken(t)) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          CouldNotPersistNewToken.reason))
+          e.reason))
           
     }
 
-    case HandshakeErrorRejection(CouldNotPersistNewEndpoint) :: _ => complete {
+    case HandshakeErrorRejection(e@CouldNotPersistNewEndpoint(ep)) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          CouldNotPersistNewEndpoint.reason))
+          e.reason))
           
     }
 
@@ -118,28 +118,28 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
           
     }
 
-    case HandshakeErrorRejection(CouldNotPersistNewParty) :: _ => complete {
+    case HandshakeErrorRejection(e@CouldNotPersistNewParty(p)) :: _ => complete {
       ( InternalServerError,
         ErrorResp(
           GenericServerFailure.code,
-          CouldNotPersistNewParty.reason))
+          e.reason))
           
     }
 
     // Not allowed
-    case HandshakeErrorRejection(AlreadyExistingParty) :: _ => complete {
+    case HandshakeErrorRejection(e@AlreadyExistingParty(p, c, v)) :: _ => complete {
       ( Conflict,
         ErrorResp(
           PartyAlreadyRegistered.code,
-          AlreadyExistingParty.reason))
-          
+          e.reason))
+
     }
 
-    case HandshakeErrorRejection(UnknownPartyToken) :: _ => complete {
+    case HandshakeErrorRejection(e@UnknownPartyToken(t)) :: _ => complete {
       ( BadRequest,
         ErrorResp(
           AuthenticationFailed.code,
-          UnknownPartyToken.reason))
+          e.reason))
           
     }
 
