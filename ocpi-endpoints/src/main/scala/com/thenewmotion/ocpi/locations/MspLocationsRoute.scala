@@ -37,8 +37,8 @@ class MspLocationsRoute(
           put {
             authorize(apiUser.countryCode == cc && apiUser.partyId == pId) {
               entity(as[Location]) { location =>
-                leftToRejection(service.createOrUpdateLocation(CpoId(cc, pId), locId, location)) { _ =>
-                  complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
+                leftToRejection(service.createOrUpdateLocation(CpoId(cc, pId), locId, location)) { res =>
+                  complete((if(res)StatusCodes.Created else StatusCodes.OK, SuccessResp(GenericSuccess.code))) }
               }
             }
           }
@@ -63,8 +63,8 @@ class MspLocationsRoute(
             pathEndOrSingleSlash {
               put {
                 entity(as[Evse]) { evse =>
-                  leftToRejection(service.addOrUpdateEvse(CpoId(cc, pId), locId, evseId, evse)) { _ =>
-                    complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
+                  leftToRejection(service.addOrUpdateEvse(CpoId(cc, pId), locId, evseId, evse)) { res =>
+                    complete((if(res)StatusCodes.Created else StatusCodes.OK, SuccessResp(GenericSuccess.code))) }
                 }
               } ~
                 patch {
@@ -83,8 +83,8 @@ class MspLocationsRoute(
               (path(Segment) & pathEndOrSingleSlash) { connId =>
                 put {
                   entity(as[Connector]) { conn =>
-                    leftToRejection(service.addOrUpdateConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { _ =>
-                      complete((StatusCodes.Created, SuccessResp(GenericSuccess.code))) }
+                    leftToRejection(service.addOrUpdateConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { res =>
+                      complete((if(res)StatusCodes.Created else StatusCodes.OK, SuccessResp(GenericSuccess.code))) }
                   }
                 } ~
                   patch {

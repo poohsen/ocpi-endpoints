@@ -28,6 +28,14 @@ object LocationsRejectionHandler extends BasicDirectives with MiscDirectives wit
         }
       }
 
+    case (LocationsErrorRejection(e@LocationNotFound(reason))) :: _ => complete {
+      ( NotFound,
+        ErrorResp(
+          GenericClientFailure.code,
+          reason getOrElse DefaultErrorMsg,
+          DateTime.now()))
+    }
+
     case (LocationsErrorRejection(e@LocationCreationFailed(reason))) :: _ => complete {
         ( BadRequest,
             ErrorResp(
@@ -36,7 +44,7 @@ object LocationsRejectionHandler extends BasicDirectives with MiscDirectives wit
               DateTime.now()))
       }
 
-    case (LocationsErrorRejection(e@LocationRetrievalFailed(reason))) :: _ => complete {
+    case (LocationsErrorRejection(e@EvseNotFound(reason))) :: _ => complete {
         ( NotFound,
             ErrorResp(
               GenericClientFailure.code,
@@ -44,7 +52,15 @@ object LocationsRejectionHandler extends BasicDirectives with MiscDirectives wit
               DateTime.now()))
       }
 
-    case (LocationsErrorRejection(e@EvseRetrievalFailed(reason))) :: _ => complete {
+    case (LocationsErrorRejection(e@EvseCreationFailed(reason))) :: _ => complete {
+      ( BadRequest,
+        ErrorResp(
+          GenericClientFailure.code,
+          reason getOrElse DefaultErrorMsg,
+          DateTime.now()))
+    }
+
+    case (LocationsErrorRejection(e@ConnectorNotFound(reason))) :: _ => complete {
         ( NotFound,
             ErrorResp(
               GenericClientFailure.code,
@@ -52,12 +68,12 @@ object LocationsRejectionHandler extends BasicDirectives with MiscDirectives wit
               DateTime.now()))
       }
 
-    case (LocationsErrorRejection(e@ConnectorRetrievalFailed(reason))) :: _ => complete {
-        ( NotFound,
-            ErrorResp(
-              GenericClientFailure.code,
-              reason getOrElse DefaultErrorMsg,
-              DateTime.now()))
-      }
+    case (LocationsErrorRejection(e@ConnectorCreationFailed(reason))) :: _ => complete {
+      ( BadRequest,
+        ErrorResp(
+          GenericClientFailure.code,
+          reason getOrElse DefaultErrorMsg,
+          DateTime.now()))
+    }
   }
 }

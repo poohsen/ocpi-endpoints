@@ -10,11 +10,11 @@ case class CpoId(countryCode: String, partyId: String)
   */
 trait MspLocationsService {
 
-  def createOrUpdateLocation(cpo: CpoId, locId: String, loc: Location): LocationsError \/ Unit
+  def createOrUpdateLocation(cpo: CpoId, locId: String, loc: Location): LocationsError \/ Boolean
 
-  def addOrUpdateEvse(cpo: CpoId, locId: String, evseId: String, evse: Evse): LocationsError \/ Unit
+  def addOrUpdateEvse(cpo: CpoId, locId: String, evseId: String, evse: Evse): LocationsError \/ Boolean
 
-  def addOrUpdateConnector(cpo: CpoId, locId: String, evseId: String, connId: String, connector: Connector): LocationsError \/ Unit
+  def addOrUpdateConnector(cpo: CpoId, locId: String, evseId: String, connId: String, connector: Connector): LocationsError \/ Boolean
 
   def updateLocation(cpo: CpoId, locId: String, locPatch: LocationPatch): LocationsError \/ Unit
 
