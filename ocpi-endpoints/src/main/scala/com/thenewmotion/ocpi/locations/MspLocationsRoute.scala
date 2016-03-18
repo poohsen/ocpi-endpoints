@@ -6,6 +6,7 @@ import com.thenewmotion.ocpi.msgs.v2_0.Locations._
 import org.joda.time.DateTime
 import spray.http.{StatusCodes, HttpMethods}
 import spray.routing.{MethodRejection, Route, Rejection}
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz._
 
 case class LocationsErrorRejection(error: LocationsError) extends Rejection
@@ -14,16 +15,16 @@ class MspLocationsRoute(
   service: MspLocationsService,
   isResourceAccessAuthorized: (String, String, String) => Boolean,
   currentTime: => DateTime = DateTime.now
-) extends JsonApi {
+) (implicit ec: ExecutionContext) extends JsonApi {
 
 
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiJsonProtocol._
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.GenericSuccess
 
-  private def leftToRejection[T](errOrX: LocationsError \/ T)(f: T => Route): Route =
-    errOrX match {
-      case -\/(err) => reject(LocationsErrorRejection(err))
-      case \/-(res) => f(res)
+  private def leftToRejection[T](errOrX: Future[LocationsError \/ T])(f: T => Route)(implicit ec: ExecutionContext): Route =
+    onSuccess(errOrX) {
+      case -\/(e) => reject(LocationsErrorRejection(e))
+      case \/-(r) => f(r)
     }
 
   def route(apiUser: ApiUser) =

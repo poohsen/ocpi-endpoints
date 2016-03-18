@@ -13,6 +13,7 @@ import spray.http.MediaTypes._
 import spray.http.{ContentType, HttpCharsets, HttpEntity}
 import spray.routing.{AuthorizationFailedRejection, MalformedRequestContentRejection}
 import spray.testkit.Specs2RouteTest
+import scala.concurrent.Future
 import scalaz._
 
 
@@ -139,15 +140,16 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
       }
 
 
+
     val mspLocService = mock[MspLocationsService]
 
-    mspLocService.createOrUpdateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any) returns \/-(true)
-    mspLocService.updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns \/-(Unit)
-    mspLocService.location(eq_(CpoId("NL", "TNM")), eq_("LOC1")) returns -\/(LocationNotFound())
-    mspLocService.evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns -\/(LocationNotFound())
-    mspLocService.connector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns -\/(LocationNotFound())
-    mspLocService.updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns \/-(Unit)
-    mspLocService.updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns \/-(Unit)
+    mspLocService.createOrUpdateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any) returns Future(\/-(true))
+    mspLocService.updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns Future(\/-(Unit))
+    mspLocService.location(eq_(CpoId("NL", "TNM")), eq_("LOC1")) returns Future(-\/(LocationNotFound()))
+    mspLocService.evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns Future(-\/(LocationNotFound()))
+    mspLocService.connector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns Future(-\/(LocationNotFound()))
+    mspLocService.updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns Future(\/-(Unit))
+    mspLocService.updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns Future(\/-(Unit))
 
     val apiUser = ApiUser("1", "123", "NL", "TNM")
 
