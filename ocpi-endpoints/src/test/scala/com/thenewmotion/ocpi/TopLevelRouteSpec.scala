@@ -1,5 +1,6 @@
 package com.thenewmotion.ocpi
 
+import com.thenewmotion.mobilityid.PartyId
 import com.thenewmotion.ocpi.handshake.HandshakeService
 import com.thenewmotion.ocpi.msgs.v2_0.Versions.EndpointIdentifier
 import org.specs2.mock.Mockito
@@ -11,7 +12,8 @@ import spray.routing.AuthenticationFailedRejection.CredentialsRejected
 import spray.routing.{AuthenticationFailedRejection, MissingHeaderRejection}
 import spray.testkit.Specs2RouteTest
 import org.joda.time.DateTime
-import spray.json._, lenses.JsonLenses._
+import spray.json._
+import lenses.JsonLenses._
 import spray.json.DefaultJsonProtocol._
 
 class TopLevelRouteSpec extends Specification with Specs2RouteTest with Mockito{
@@ -111,8 +113,8 @@ class TopLevelRouteSpec extends Specification with Specs2RouteTest with Mockito{
             )
           )
         ), mockHandshakeService
-      ) { token => if (token == "12345") Some(ApiUser("beCharged","12345", "BE", "BEC")) else None }
-        { token => if (token == "initiate") Some(ApiUser("admin", "initiate", "NL", "TNM")) else None }
+      ) { token => if (token == "12345") Some(ApiUser("beCharged","12345", PartyId("BE", "BEC"))) else None }
+        { token => if (token == "initiate") Some(ApiUser("admin", "initiate", PartyId("NL", "TNM"))) else None }
     }
   }
 }

@@ -1,11 +1,13 @@
 package com.thenewmotion.ocpi.locations
 
+import com.thenewmotion.mobilityid.PartyId
 import com.thenewmotion.ocpi.{ApiUser, JsonApi}
 import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.SuccessResp
 import com.thenewmotion.ocpi.msgs.v2_0.Locations._
 import org.joda.time.DateTime
-import spray.http.{StatusCodes, HttpMethods}
-import spray.routing.{MethodRejection, Route, Rejection}
+import spray.http.{HttpMethods, StatusCodes}
+import spray.routing.{MethodRejection, Rejection, Route}
+
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz._
 
@@ -36,26 +38,26 @@ class MspLocationsRoute(
       pathEndOrSingleSlash {
         cancelRejection(MethodRejection(HttpMethods.PUT)){
           put {
-            authorize(apiUser.countryCode == cc && apiUser.partyId == pId) {
+            authorize(apiUser.party == PartyId(cc, pId)) {
               entity(as[Location]) { location =>
-                leftToRejection(service.createOrUpdateLocation(CpoId(cc, pId), locId, location)) { res =>
+                leftToRejection(service.createOrUpdateLocation(PartyId(cc, pId), locId, location)) { res =>
                   complete((if(res)StatusCodes.Created else StatusCodes.OK, SuccessResp(GenericSuccess.code))) }
               }
             }
           }
         }
       } ~
-      authorize(apiUser.countryCode == cc && apiUser.partyId == pId && isResourceAccessAuthorized(cc, pId, locId)) {
+      authorize(apiUser.party == PartyId(cc, pId) && isResourceAccessAuthorized(cc, pId, locId)) {
         pathEndOrSingleSlash {
           patch {
             entity(as[LocationPatch]) { location =>
-              leftToRejection(service.updateLocation(CpoId(cc, pId), locId, location)){ _ =>
+              leftToRejection(service.updateLocation(PartyId(cc, pId), locId, location)){ _ =>
                 complete(SuccessResp(GenericSuccess.code)) }
             }
           } ~
           get {
             dynamic {
-              leftToRejection(service.location(CpoId(cc, pId), locId)) { location =>
+              leftToRejection(service.location(PartyId(cc, pId), locId)) { location =>
                 complete(LocationResp(GenericSuccess.code, None, data = location)) }
             }
           }
@@ -64,19 +66,19 @@ class MspLocationsRoute(
             pathEndOrSingleSlash {
               put {
                 entity(as[Evse]) { evse =>
-                  leftToRejection(service.addOrUpdateEvse(CpoId(cc, pId), locId, evseId, evse)) { res =>
+                  leftToRejection(service.addOrUpdateEvse(PartyId(cc, pId), locId, evseId, evse)) { res =>
                     complete((if(res)StatusCodes.Created else StatusCodes.OK, SuccessResp(GenericSuccess.code))) }
                 }
               } ~
                 patch {
                   entity(as[EvsePatch]) { evse =>
-                    leftToRejection(service.updateEvse(CpoId(cc, pId), locId, evseId, evse)) { _ =>
+                    leftToRejection(service.updateEvse(PartyId(cc, pId), locId, evseId, evse)) { _ =>
                       complete(SuccessResp(GenericSuccess.code)) }
                   }
                 } ~
                 get {
                   dynamic {
-                    leftToRejection(service.evse(CpoId(cc, pId), locId, evseId)) { evse =>
+                    leftToRejection(service.evse(PartyId(cc, pId), locId, evseId)) { evse =>
                       complete(EvseResp(GenericSuccess.code, None, data = evse)) }
                   }
                 }
@@ -84,19 +86,19 @@ class MspLocationsRoute(
               (path(Segment) & pathEndOrSingleSlash) { connId =>
                 put {
                   entity(as[Connector]) { conn =>
-                    leftToRejection(service.addOrUpdateConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { res =>
+                    leftToRejection(service.addOrUpdateConnector(PartyId(cc, pId), locId, evseId, connId, conn)) { res =>
                       complete((if(res)StatusCodes.Created else StatusCodes.OK, SuccessResp(GenericSuccess.code))) }
                   }
                 } ~
                   patch {
                     entity(as[ConnectorPatch]) { conn =>
-                      leftToRejection(service.updateConnector(CpoId(cc, pId), locId, evseId, connId, conn)) { _ =>
+                      leftToRejection(service.updateConnector(PartyId(cc, pId), locId, evseId, connId, conn)) { _ =>
                         complete(SuccessResp(GenericSuccess.code)) }
                     }
                   } ~
                   get {
                     dynamic {
-                      leftToRejection(service.connector(CpoId(cc, pId), locId, evseId, connId)) { connector =>
+                      leftToRejection(service.connector(PartyId(cc, pId), locId, evseId, connId)) { connector =>
                         complete(ConnectorResp(GenericSuccess.code, None, data = connector)) }
                     }
                   }

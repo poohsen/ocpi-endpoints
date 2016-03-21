@@ -6,6 +6,7 @@ import com.thenewmotion.ocpi.locations.LocationsError._
 import org.joda.time.DateTime
 import org.mockito.Matchers
 import Matchers.{eq => eq_}
+import com.thenewmotion.mobilityid.PartyId
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -13,6 +14,7 @@ import spray.http.MediaTypes._
 import spray.http.{ContentType, HttpCharsets, HttpEntity}
 import spray.routing.{AuthorizationFailedRejection, MalformedRequestContentRejection}
 import spray.testkit.Specs2RouteTest
+
 import scala.concurrent.Future
 import scalaz._
 
@@ -27,7 +29,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
         string = loc2String)
 
       Put("/NL/TNM/LOC2", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).createOrUpdateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any)
+        there was one(mspLocService).createOrUpdateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC2"), any)
       }
     }
 
@@ -42,7 +44,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any)
+        there was one(mspLocService).updateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC1"), any)
       }
     }
 
@@ -73,7 +75,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any)
+        there was one(mspLocService).updateEvse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any)
       }
     }
 
@@ -88,25 +90,25 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1/NL-TNM-02000000/1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"), any)
+        there was one(mspLocService).updateConnector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"), any)
       }
     }
 
     "retrieve a location object" in new LocationsTestScope {
       Get("/NL/TNM/LOC1") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).location(eq_(CpoId("NL", "TNM")), eq_("LOC1"))
+        there was one(mspLocService).location(eq_(PartyId("NL", "TNM")), eq_("LOC1"))
       }
     }
 
     "retrieve a EVSE object" in new LocationsTestScope {
       Get("/NL/TNM/LOC1/NL-TNM-02000000") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"))
+        there was one(mspLocService).evse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"))
       }
     }
 
     "retrieve a connector object" in new LocationsTestScope {
       Get("/NL/TNM/LOC1/NL-TNM-02000000/1") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).connector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"))
+        there was one(mspLocService).connector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"))
       }
     }
 
@@ -143,15 +145,15 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
 
     val mspLocService = mock[MspLocationsService]
 
-    mspLocService.createOrUpdateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC2"), any) returns Future(\/-(true))
-    mspLocService.updateLocation(eq_(CpoId("NL", "TNM")), eq_("LOC1"), any) returns Future(\/-(Unit))
-    mspLocService.location(eq_(CpoId("NL", "TNM")), eq_("LOC1")) returns Future(-\/(LocationNotFound()))
-    mspLocService.evse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns Future(-\/(LocationNotFound()))
-    mspLocService.connector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns Future(-\/(LocationNotFound()))
-    mspLocService.updateEvse(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns Future(\/-(Unit))
-    mspLocService.updateConnector(eq_(CpoId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns Future(\/-(Unit))
+    mspLocService.createOrUpdateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC2"), any) returns Future(\/-(true))
+    mspLocService.updateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC1"), any) returns Future(\/-(Unit))
+    mspLocService.location(eq_(PartyId("NL", "TNM")), eq_("LOC1")) returns Future(-\/(LocationNotFound()))
+    mspLocService.evse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns Future(-\/(LocationNotFound()))
+    mspLocService.connector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns Future(-\/(LocationNotFound()))
+    mspLocService.updateEvse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns Future(\/-(Unit))
+    mspLocService.updateConnector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns Future(\/-(Unit))
 
-    val apiUser = ApiUser("1", "123", "NL", "TNM")
+    val apiUser = ApiUser("1", "123", PartyId("NL", "TNM"))
 
     val locationsRoute = new MspLocationsRoute(mspLocService, authorizeAccess, dateTime1)
 
