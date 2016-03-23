@@ -1,6 +1,5 @@
 package com.thenewmotion.ocpi
 
-import com.thenewmotion.mobilityid.PartyId
 import com.thenewmotion.ocpi.handshake.HandshakeService
 import com.thenewmotion.ocpi.msgs.v2_0.Versions.EndpointIdentifier
 import org.specs2.mock.Mockito
@@ -113,8 +112,8 @@ class TopLevelRouteSpec extends Specification with Specs2RouteTest with Mockito{
             )
           )
         ), mockHandshakeService
-      ) { token => if (token == "12345") Some(ApiUser("beCharged","12345", PartyId("BE", "BEC"))) else None }
-        { token => if (token == "initiate") Some(ApiUser("admin", "initiate", PartyId("NL", "TNM"))) else None }
+      ) { token => if (token == "12345") Some(ApiUser("beCharged","12345", "BE", "BEC")) else None }
+        { token => if (token == "initiate") Some(ApiUser("admin", "initiate", "BE", "BEC")) else None }
     }
   }
 }

@@ -6,7 +6,8 @@ import com.thenewmotion.ocpi.locations.LocationsError._
 import org.joda.time.DateTime
 import org.mockito.Matchers
 import Matchers.{eq => eq_}
-import com.thenewmotion.mobilityid.PartyId
+import com.thenewmotion.mobilityid.{CountryCode, OperatorId}
+import org.specs2.matcher.Matcher
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -29,7 +30,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
         string = loc2String)
 
       Put("/NL/TNM/LOC2", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).createOrUpdateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC2"), any)
+        there was one(mspLocService).createOrUpdateLocation(any, any, eq_("LOC2"), any)
       }
     }
 
@@ -44,7 +45,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).updateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC1"), any)
+        there was one(mspLocService).updateLocation(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), any)
       }
     }
 
@@ -75,7 +76,7 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1/NL-TNM-02000000", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).updateEvse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any)
+        there was one(mspLocService).updateEvse(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any)
       }
     }
 
@@ -90,25 +91,25 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
            |""".stripMargin)
 
       Patch("/NL/TNM/LOC1/NL-TNM-02000000/1", body) ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).updateConnector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"), any)
+        there was one(mspLocService).updateConnector(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"), any)
       }
     }
 
     "retrieve a location object" in new LocationsTestScope {
       Get("/NL/TNM/LOC1") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).location(eq_(PartyId("NL", "TNM")), eq_("LOC1"))
+        there was one(mspLocService).location(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"))
       }
     }
 
     "retrieve a EVSE object" in new LocationsTestScope {
       Get("/NL/TNM/LOC1/NL-TNM-02000000") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).evse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"))
+        there was one(mspLocService).evse(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"))
       }
     }
 
     "retrieve a connector object" in new LocationsTestScope {
       Get("/NL/TNM/LOC1/NL-TNM-02000000/1") ~> locationsRoute.routeWithoutRh(apiUser) ~> check {
-        there was one(mspLocService).connector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"))
+        there was one(mspLocService).connector(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"))
       }
     }
 
@@ -135,25 +136,27 @@ class MspLocationsRouteSpec extends Specification with Specs2RouteTest with Mock
 
     val dateTime1 = DateTime.parse("2010-01-01T00:00:00Z")
 
-    def authorizeAccess(cc: String, opId: String, locId: String) =
+    def authorizeAccess(cc: CountryCode, opId: OperatorId, locId: String) =
       (cc, opId, locId) match {
-        case ("NL", "TNM", "LOC1") => true
+        case (CountryCode("NL"), OperatorId("TNM"), "LOC1") => true
         case _ => false
       }
 
 
+    def ccMatcher(toMatch: String): Matcher[CountryCode] = {cc: CountryCode => (cc == CountryCode(toMatch), s"$cc doesn't match $toMatch")}
+    def opMatcher(toMatch: String): Matcher[OperatorId] = {opId: OperatorId => (opId == OperatorId(toMatch), s"$opId doesn't match $toMatch")}
 
     val mspLocService = mock[MspLocationsService]
 
-    mspLocService.createOrUpdateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC2"), any) returns Future(\/-(true))
-    mspLocService.updateLocation(eq_(PartyId("NL", "TNM")), eq_("LOC1"), any) returns Future(\/-(Unit))
-    mspLocService.location(eq_(PartyId("NL", "TNM")), eq_("LOC1")) returns Future(-\/(LocationNotFound()))
-    mspLocService.evse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns Future(-\/(LocationNotFound()))
-    mspLocService.connector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns Future(-\/(LocationNotFound()))
-    mspLocService.updateEvse(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns Future(\/-(Unit))
-    mspLocService.updateConnector(eq_(PartyId("NL", "TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns Future(\/-(Unit))
+    mspLocService.createOrUpdateLocation(any, any[OperatorId], eq_("LOC2"), any) returns Future(\/-(true))
+    mspLocService.updateLocation(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), any) returns Future(\/-(Unit))
+    mspLocService.location(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1")) returns Future(-\/(LocationNotFound()))
+    mspLocService.evse(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000")) returns Future(-\/(LocationNotFound()))
+    mspLocService.connector(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1")) returns Future(-\/(LocationNotFound()))
+    mspLocService.updateEvse(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), any) returns Future(\/-(Unit))
+    mspLocService.updateConnector(eq_(CountryCode("NL")), eq_(OperatorId("TNM")), eq_("LOC1"), eq_("NL-TNM-02000000"), eq_("1"),any) returns Future(\/-(Unit))
 
-    val apiUser = ApiUser("1", "123", PartyId("NL", "TNM"))
+    val apiUser = ApiUser("1", "123", "NL", "TNM")
 
     val locationsRoute = new MspLocationsRoute(mspLocService, authorizeAccess, dateTime1)
 
