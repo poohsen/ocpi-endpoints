@@ -4,7 +4,7 @@ import com.thenewmotion.ocpi.handshake.HandshakeError._
 import com.thenewmotion.ocpi.handshake.HandshakeError.UnknownPartyToken
 import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.{BusinessDetails => OcpiBusinessDetails, Image, ImageCategory}
 import com.thenewmotion.ocpi.msgs.v2_0.Credentials.Creds
-import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.{UnableToUseApi, GenericSuccess}
+import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes._
 import org.joda.time.DateTime
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -61,8 +61,11 @@ class HandshakeRouteSpec extends Specification with Specs2RouteTest with Mockito
     }
 
     "return error if no credentials to connect to us stored for that token" in new CredentialsTestScope {
-      Get("/credentials") ~> credentialsRoute.routeWithoutRH(selectedVersion, tokenToConnectToUs) ~> check {
-        handled must beFalse
+      Get("/credentials") ~>
+      credentialsRoute.routeWithoutRH(selectedVersion, tokenToConnectToUs) ~>
+      check {
+        responseAs[String] must contain(AuthenticationFailed.code.toString)
+        responseAs[String] must contain(tokenToConnectToUs)
       }
     }
 

@@ -1,6 +1,6 @@
 package com.thenewmotion.ocpi
 
-import com.thenewmotion.ocpi.handshake.{HandshakeErrorRejection, HandshakeError, InitiateHandshakeRoute}
+import com.thenewmotion.ocpi.handshake.InitiateHandshakeRoute
 import com.thenewmotion.ocpi.msgs.v2_0.OcpiStatusCodes.GenericSuccess
 import com.thenewmotion.ocpi.msgs.v2_0.Versions._
 import spray.http._, HttpHeaders._
@@ -20,22 +20,6 @@ trait TopLevelRoute extends JsonApi {
 
   val EndPointPathMatcher = Segment.flatMap {
     case s => EndpointIdentifier.withName(s)
-  }
-
-  trait TopLevelApi extends JsonApi {
-    protected def leftToRejection[T](errOrX: HandshakeError \/ T)(f: T => Route): Route =
-      errOrX match {
-        case -\/(err) => reject(HandshakeErrorRejection(err))
-        case \/-(res) => f(res)
-      }
-
-    protected def futLeftToRejection[T](errOrX: Future[HandshakeError \/ T])(f: T => Route)
-      (implicit ec: ExecutionContext): Route = {
-      FutureDirectives.onSuccess(errOrX) {
-        case -\/(err) => reject(HandshakeErrorRejection(err))
-        case \/-(res) => f(res)
-      }
-    }
   }
 
   def appendPath(uri: Uri, segments: String*) = {

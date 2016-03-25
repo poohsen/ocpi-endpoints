@@ -91,7 +91,7 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
         ErrorResp(
           GenericServerFailure.code,
           CouldNotPersistNewCredsForUs.reason))
-          
+
     }
 
     case HandshakeErrorRejection(e@CouldNotPersistNewToken(t)) :: _ => complete {
@@ -99,7 +99,7 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
         ErrorResp(
           GenericServerFailure.code,
           e.reason))
-          
+
     }
 
     case HandshakeErrorRejection(e@CouldNotPersistNewEndpoint(ep)) :: _ => complete {
@@ -107,7 +107,7 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
         ErrorResp(
           GenericServerFailure.code,
           e.reason))
-          
+
     }
 
     case HandshakeErrorRejection(CouldNotUpdateEndpoints) :: _ => complete {
@@ -115,7 +115,7 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
         ErrorResp(
           GenericServerFailure.code,
           CouldNotUpdateEndpoints.reason))
-          
+
     }
 
     case HandshakeErrorRejection(e@CouldNotPersistNewParty(p)) :: _ => complete {
@@ -123,7 +123,7 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
         ErrorResp(
           GenericServerFailure.code,
           e.reason))
-          
+
     }
 
     // Not allowed
@@ -140,7 +140,7 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
         ErrorResp(
           AuthenticationFailed.code,
           e.reason))
-          
+
     }
 
     case HandshakeErrorRejection(WaitingForRegistrationRequest) :: _ => complete {
@@ -148,8 +148,40 @@ object HandshakeRejectionHandler  extends BasicDirectives with MiscDirectives wi
         ErrorResp(
           RegistrationNotCompletedYetByParty.code,
           WaitingForRegistrationRequest.reason))
-          
+
     }
 
   }
+
+
+  import spray.httpx.marshalling._
+  import spray.http._
+
+  implicit val handshakeErrorToResponseMarshaller: ToResponseMarshaller[HandshakeError] =
+    implicitly[ToResponseMarshaller[(StatusCode, ErrorResp)]]
+    .compose[HandshakeError] { e =>
+      val (status, cec) = e match {
+        case VersionsRetrievalFailed => (FailedDependency, UnableToUseApi)
+        case VersionDetailsRetrievalFailed => (FailedDependency, UnableToUseApi)
+        case SendingCredentialsFailed => (BadRequest, UnableToUseApi)
+        case SelectedVersionNotHostedByUs(v) => (BadRequest, UnsupportedVersion)
+        case CouldNotFindMutualVersion => (BadRequest, UnsupportedVersion)
+        case SelectedVersionNotHostedByThem(_) => (BadRequest, UnsupportedVersion)
+        // case (r@ValidationRejection(msg, cause)=>
+        //   (BadRequest, (MissingExpectedEndpoints.code,
+        //       s"${MissingExpectedEndpoints.default_message} $msg"))
+        case HandshakeError.UnknownEndpointType(_) => (InternalServerError, OcpiStatusCodes.UnknownEndpointType)
+        case CouldNotPersistCredsForUs => (InternalServerError, GenericServerFailure)
+        case CouldNotPersistNewCredsForUs => (InternalServerError, GenericServerFailure)
+        case CouldNotPersistNewToken(_) => (InternalServerError, GenericServerFailure)
+        case CouldNotPersistNewEndpoint(_) => (InternalServerError, GenericServerFailure)
+        case CouldNotUpdateEndpoints => (InternalServerError, GenericServerFailure)
+        case CouldNotPersistNewParty(p) => (InternalServerError, GenericServerFailure)
+        case AlreadyExistingParty(p, c, v) => (Conflict, PartyAlreadyRegistered)
+        case UnknownPartyToken(t) => (BadRequest, AuthenticationFailed)
+        case WaitingForRegistrationRequest => (BadRequest, RegistrationNotCompletedYetByParty)
+      }
+
+      (status, ErrorResp(cec.code, e.reason))
+    }
 }

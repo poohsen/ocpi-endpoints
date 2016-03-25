@@ -8,17 +8,18 @@ import scala.concurrent._
 import spray.routing.{Route, Rejection}
 import scalaz._
 import spray.routing.directives.FutureDirectives
+import HandshakeRejectionHandler.handshakeErrorToResponseMarshaller
 
 case class HandshakeErrorRejection(error: HandshakeError) extends Rejection
 
 trait HandshakeApi extends JsonApi {
   private val logger = Logger(getClass)
 
-  protected def leftToRejection[T](errOrX: HandshakeError \/ T)(f: T => Route): Route =
-    errOrX match {
-      case -\/(err) => logger.error(s"HandshakeErrorRejection just happened with reason: ${err.reason}"); reject(HandshakeErrorRejection(err))
-      case \/-(res) => f(res)
-    }
+  // protected def leftToRejection[T](errOrX: HandshakeError \/ T)(f: T => Route): Route =
+  //   errOrX match {
+  //     case -\/(err) => logger.error(s"HandshakeErrorRejection just happened with reason: ${err.reason}"); reject(HandshakeErrorRejection(err))
+  //     case \/-(res) => f(res)
+  //   }
 
   protected def futLeftToRejection[T](errOrX: Future[HandshakeError \/ T])(f: T => Route)
     (implicit ec: ExecutionContext): Route = {
@@ -32,6 +33,13 @@ trait HandshakeApi extends JsonApi {
 class HandshakeRoute(service: HandshakeService, currentTime: => DateTime = DateTime.now) extends HandshakeApi {
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiJsonProtocol._
   import com.thenewmotion.ocpi.msgs.v2_0.Credentials._
+  import spray.httpx.marshalling._
+
+  implicit def eitherToResponseMarshaller[L, R]
+    (implicit lm: ToResponseMarshaller[L], rm: ToResponseMarshaller[R]) =
+    ToResponseMarshaller[\/[L, R]]{ (v, ctx) =>
+      v.fold(lm(_, ctx), rm(_, ctx))
+    }
 
   def route(accessedVersion: Version, tokenToConnectToUs: AuthToken)(implicit ec: ExecutionContext) =
     handleRejections(HandshakeRejectionHandler.Default)(routeWithoutRH(accessedVersion, tokenToConnectToUs))
@@ -46,20 +54,22 @@ class HandshakeRoute(service: HandshakeService, currentTime: => DateTime = DateT
         }
       }
     } ~
-      get {
-        leftToRejection(service.findRegisteredCredsToConnectToUs(tokenToConnectToUs)) { credsToConnectToUs =>
-            complete(CredsResp(GenericSuccess.code, None, currentTime, credsToConnectToUs))
-        }
-      } ~
-      put {
-        entity(as[Creds]) { credsToConnectToThem =>
-          onSuccess(service.reactToUpdateCredsRequest(accessedVersion, tokenToConnectToUs, credsToConnectToThem)) {
-            case -\/(_) => reject()
-            case \/-(newCredsToConnectToUs) => complete(CredsResp(GenericSuccess.code, Some(GenericSuccess.default_message),
-              currentTime, newCredsToConnectToUs))
-          }
+    get {
+      complete {
+        service
+          .findRegisteredCredsToConnectToUs(tokenToConnectToUs)
+          .map(CredsResp(GenericSuccess.code, None, currentTime, _))
+      }
+    } ~
+    put {
+      entity(as[Creds]) { credsToConnectToThem =>
+        onSuccess(service.reactToUpdateCredsRequest(accessedVersion, tokenToConnectToUs, credsToConnectToThem)) {
+          case -\/(_) => reject()
+          case \/-(newCredsToConnectToUs) => complete(CredsResp(GenericSuccess.code, Some(GenericSuccess.default_message),
+            currentTime, newCredsToConnectToUs))
         }
       }
+    }
   }
 }
 
