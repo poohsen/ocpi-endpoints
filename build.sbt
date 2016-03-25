@@ -1,6 +1,3 @@
-import sbt.Keys._
-import sbt._
-
 val logging = Seq(
   "ch.qos.logback"               % "logback-classic"          %   "1.1.3" % "test",
   "org.slf4j"                    % "slf4j-api"                %   "1.7.15")
@@ -39,14 +36,14 @@ val commonSettings = Seq(
   licenses += ("Apache License, Version 2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 )
 
-val `ocpi-msgs` = (project in file("ocpi-msgs"))
+val `ocpi-msgs` = project
   .enablePlugins(OssLibPlugin)
   .settings(
     commonSettings,
     description := "OCPI serialization library",
     libraryDependencies :=`spray-json` ++ misc ++ testing)
 
-val `ocpi-endpoints` = (project in file("ocpi-endpoints"))
+val `ocpi-endpoints` = project
   .enablePlugins(OssLibPlugin)
   .dependsOn(`ocpi-msgs`)
   .settings(
@@ -54,11 +51,13 @@ val `ocpi-endpoints` = (project in file("ocpi-endpoints"))
     description := "OCPI endpoints",
     libraryDependencies := logging ++ spray ++ akka(scalaVersion.value) ++ scalaz ++ misc ++ testing)
 
-val root = (project in file("."))
+val `ocpi-endpoints-root` = (project in file("."))
   .aggregate(
     `ocpi-msgs`,
     `ocpi-endpoints`)
+  .enablePlugins(OssLibPlugin)
+  .settings(
+    commonSettings,
+    publish := {}
+  )
 
-enablePlugins(OssLibPlugin)
-
-publish := {}
