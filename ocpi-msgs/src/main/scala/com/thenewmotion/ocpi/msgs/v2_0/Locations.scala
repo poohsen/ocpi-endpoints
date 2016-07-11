@@ -314,7 +314,10 @@ object Locations {
     status_message: Option[String] = None,
     timestamp: DateTime = DateTime.now(),
     data: List[Location]
-    ) extends SuccessResponse
+    ) extends SuccessResponse with DataResponse[LocationsResp] {
+    type DataItem = Location
+    override def copyData(locs: List[Location]): LocationsResp = copy(data = locs)
+  }
 
   case class LocationResp(
     status_code: Int,
