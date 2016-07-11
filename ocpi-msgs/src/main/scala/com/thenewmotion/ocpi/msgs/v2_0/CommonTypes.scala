@@ -62,4 +62,11 @@ object CommonTypes {
     status_message: Option[String] = None,
     timestamp: DateTime = DateTime.now()
   ) extends SuccessResponse
+
+  trait DataResponse[D <: DataResponse[D]]{ // ye good ol' f-bounded polymorphism
+    type DataItem
+    def data: List[DataItem]
+    def copyData(data: List[DataItem]): D
+  }
+
 }
