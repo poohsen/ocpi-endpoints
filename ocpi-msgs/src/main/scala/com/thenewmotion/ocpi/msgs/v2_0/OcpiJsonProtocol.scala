@@ -223,4 +223,6 @@ object OcpiJsonProtocol extends DefaultJsonProtocol {
   implicit val successRespFormat = jsonFormat3(SuccessResp)
   implicit val credentialsFormat = jsonFormat5(Creds)
   implicit val credentialsRespFormat = jsonFormat4(CredsResp)
+
+  implicit def pageFmt[T: JsonFormat] = jsonFormat1(Page[T])
 }

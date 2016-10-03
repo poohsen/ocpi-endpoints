@@ -4,7 +4,8 @@ import akka.actor.ActorRefFactory
 import akka.util.Timeout
 import com.thenewmotion.ocpi.common.OcpiClient
 import com.thenewmotion.ocpi.locations.LocationsError._
-import com.thenewmotion.ocpi.msgs.v2_0.Locations.LocationsResp
+import com.thenewmotion.ocpi.msgs.v2_0.Locations.Location
+import com.thenewmotion.ocpi.msgs.v2_0.CommonTypes.Page
 import spray.client.pipelining._
 import spray.http._
 import spray.httpx.SprayJsonSupport._
@@ -16,8 +17,9 @@ import scalaz._
 class LocationsClient(implicit refFactory: ActorRefFactory, timeout: Timeout = Timeout(20.seconds)) extends OcpiClient {
   import com.thenewmotion.ocpi.msgs.v2_0.OcpiJsonProtocol._
 
-  def getLocations(uri: Uri, auth: String)(implicit ec: ExecutionContext): Future[LocationsError \/ LocationsResp] =
-    traversePaginatedResource(uri, auth, LocationNotFound())(unmarshal[LocationsResp])
+  def getLocations(uri: Uri, auth: String)(implicit ec: ExecutionContext): Future[LocationsError \/ Iterable[Location]] = {
+    traversePaginatedResource(uri, auth, LocationNotFound())(unmarshal[Page[Location]])
+  }
 
 }
 

@@ -69,4 +69,7 @@ object CommonTypes {
     def copyData(data: List[DataItem]): D
   }
 
+  case class Page[T](data: Iterable[T]) {
+    def items = data
+  }
 }
