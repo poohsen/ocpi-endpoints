@@ -1,4 +1,5 @@
 import sbt.Keys.libraryDependencies
+import com.typesafe.sbt.pgp.PgpKeys
 
 val logging = Seq(
   "ch.qos.logback"               % "logback-classic"          %   "1.2.3",
@@ -48,7 +49,8 @@ val jsonLenses = Seq("net.virtual-void" %% "json-lenses" %  "0.6.2")
 
 val commonSettings = Seq(
   organization := "com.thenewmotion.ocpi",
-  licenses += ("Apache License, Version 2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
+  licenses += ("Apache License, Version 2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value
 )
 
 val `prelude` = project
